@@ -44,6 +44,7 @@ impl TrueColorImage {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct TrueColor {
     pub r: u8,
     pub g: u8,
