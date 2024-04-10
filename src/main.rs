@@ -8,6 +8,7 @@ use true_color::TrueColorImage;
 #[derive(Parser)]
 struct Cli {
     input_path: PathBuf,
+    output_path: PathBuf,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -15,6 +16,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Input: {}", cli.input_path.display());
 
     let input_image = TrueColorImage::decode(&cli.input_path)?;
+    let output_image = input_image;
+    output_image.encode(&cli.output_path)?;
 
     Ok(())
 }
