@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use crate::{color::Rgb8, indexed::IndexedImage, true_color::TrueColorImage};
 
 enum Tree {
@@ -11,7 +13,7 @@ struct Node {
 }
 
 struct Leaf {
-    colors: Vec<Rgb8>,
+    colors: BTreeMap<Rgb8, usize>,
 }
 
 enum Channel {
@@ -21,7 +23,8 @@ enum Channel {
 }
 
 pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
-    let tree = build_tree(&input_image.pixels, Channel::Red);
+    let colors = count_unique_colors(&input_image.pixels);
+    let tree = build_tree(&colors, Channel::Red);
     let palette: Vec<Rgb8> = build_palette(tree);
     let pixels = remap(&input_image.pixels, &palette);
 
@@ -33,7 +36,22 @@ pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
     }
 }
 
-fn build_tree(colors: &[Rgb8], cut_channel: Channel) -> Tree {
+fn count_unique_colors(pixels: &[Rgb8]) -> BTreeMap<Rgb8, usize> {
+    let mut unique_colors = BTreeMap::new();
+
+    for input_color in pixels {
+        match unique_colors.get_mut(input_color) {
+            Some(count) => *count += 1,
+            None => {
+                unique_colors.insert(*input_color, 1);
+            }
+        }
+    }
+
+    unique_colors
+}
+
+fn build_tree(colors: &BTreeMap<Rgb8, usize>, cut_channel: Channel) -> Tree {
     match cut_channel {
         Channel::Red => {
             let (greater_equal, less) = partition_colors_by(colors, red);
@@ -76,7 +94,10 @@ fn blue(color: &Rgb8) -> u8 {
     color.b
 }
 
-fn partition_colors_by<F>(colors: &[Rgb8], extract_component: F) -> (Vec<Rgb8>, Vec<Rgb8>)
+fn partition_colors_by<F>(
+    colors: &BTreeMap<Rgb8, usize>,
+    extract_component: F,
+) -> (BTreeMap<Rgb8, usize>, BTreeMap<Rgb8, usize>)
 where
     F: Fn(&Rgb8) -> u8,
 {
@@ -84,21 +105,22 @@ where
     let avg_component = extract_component(&avg_color);
     colors
         .iter()
-        .partition(|&col| extract_component(col) >= avg_component)
+        .partition(|&(color, _count)| extract_component(color) >= avg_component)
 }
 
-fn average_color(colors: &[Rgb8]) -> Rgb8 {
+fn average_color(colors: &BTreeMap<Rgb8, usize>) -> Rgb8 {
     let mut r = 0;
     let mut g = 0;
     let mut b = 0;
+    let mut denominator = 0;
 
-    for color in colors {
-        r += color.r as usize;
-        g += color.g as usize;
-        b += color.b as usize;
+    for (color, count) in colors {
+        r += color.r as usize * count;
+        g += color.g as usize * count;
+        b += color.b as usize * count;
+        denominator += count;
     }
 
-    let denominator = colors.len();
     Rgb8 {
         r: (r / denominator) as u8,
         g: (g / denominator) as u8,
