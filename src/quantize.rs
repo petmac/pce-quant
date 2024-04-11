@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use crate::{color::Rgb8, indexed::IndexedImage, true_color::TrueColorImage};
 
 enum Tree {
@@ -13,7 +11,7 @@ struct Node {
 }
 
 struct Leaf {
-    color_counts: BTreeMap<Rgb8, usize>,
+    colors: Vec<Rgb8>,
 }
 
 enum Channel {
@@ -23,8 +21,7 @@ enum Channel {
 }
 
 pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
-    let color_counts = count_unique_colors(input_image);
-    let tree = build_tree(color_counts, Channel::Red);
+    let tree = build_tree(&input_image.pixels, Channel::Red);
     let palette: Vec<Rgb8> = build_palette(tree);
     let pixels = remap(&input_image.pixels, &palette);
 
@@ -36,75 +33,53 @@ pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
     }
 }
 
-fn count_unique_colors(image: &TrueColorImage) -> BTreeMap<Rgb8, usize> {
-    let mut color_counts = BTreeMap::new();
-
-    for color in &image.pixels {
-        match color_counts.get_mut(color) {
-            Some(existing) => *existing += 1,
-            None => {
-                color_counts.insert(*color, 1);
-            }
-        }
-    }
-
-    color_counts
-}
-
-fn build_tree(color_counts: BTreeMap<Rgb8, usize>, cut_channel: Channel) -> Tree {
-    let avg_color = weighted_average_color(&color_counts);
+fn build_tree(colors: &[Rgb8], cut_channel: Channel) -> Tree {
+    let avg_color = average_color(colors);
     match cut_channel {
         Channel::Red => {
-            let (greater_equal, less): (BTreeMap<Rgb8, usize>, BTreeMap<Rgb8, usize>) =
-                color_counts
-                    .iter()
-                    .partition(|&(col, _count)| col.r >= avg_color.r);
+            let (greater_equal, less): (Vec<Rgb8>, Vec<Rgb8>) =
+                colors.iter().partition(|&col| col.r >= avg_color.r);
             let node = Node {
-                greater_equal: build_tree(greater_equal, Channel::Green),
-                less: build_tree(less, Channel::Green),
+                greater_equal: build_tree(&greater_equal, Channel::Green),
+                less: build_tree(&less, Channel::Green),
             };
             Tree::Node(Box::new(node))
         }
         Channel::Green => {
-            let (greater_equal, less): (BTreeMap<Rgb8, usize>, BTreeMap<Rgb8, usize>) =
-                color_counts
-                    .iter()
-                    .partition(|&(col, _count)| col.g >= avg_color.g);
+            let (greater_equal, less): (Vec<Rgb8>, Vec<Rgb8>) =
+                colors.iter().partition(|&col| col.g >= avg_color.g);
             let node = Node {
-                greater_equal: build_tree(greater_equal, Channel::Blue),
-                less: build_tree(less, Channel::Blue),
+                greater_equal: build_tree(&greater_equal, Channel::Blue),
+                less: build_tree(&less, Channel::Blue),
             };
             Tree::Node(Box::new(node))
         }
         Channel::Blue => {
-            let (greater_equal, less): (BTreeMap<Rgb8, usize>, BTreeMap<Rgb8, usize>) =
-                color_counts
-                    .iter()
-                    .partition(|&(col, _count)| col.b >= avg_color.b);
+            let (greater_equal, less): (Vec<Rgb8>, Vec<Rgb8>) =
+                colors.iter().partition(|&col| col.b >= avg_color.b);
             let node = Node {
                 greater_equal: Tree::Leaf(Leaf {
-                    color_counts: greater_equal,
+                    colors: greater_equal,
                 }),
-                less: Tree::Leaf(Leaf { color_counts: less }),
+                less: Tree::Leaf(Leaf { colors: less }),
             };
             Tree::Node(Box::new(node))
         }
     }
 }
 
-fn weighted_average_color(color_counts: &BTreeMap<Rgb8, usize>) -> Rgb8 {
+fn average_color(colors: &[Rgb8]) -> Rgb8 {
     let mut r = 0;
     let mut g = 0;
     let mut b = 0;
-    let mut denominator = 0;
 
-    for (color, &count) in color_counts {
-        r += color.r as usize * count;
-        g += color.g as usize * count;
-        b += color.b as usize * count;
-        denominator += count;
+    for color in colors {
+        r += color.r as usize;
+        g += color.g as usize;
+        b += color.b as usize;
     }
 
+    let denominator = colors.len();
     Rgb8 {
         r: (r / denominator) as u8,
         g: (g / denominator) as u8,
@@ -120,7 +95,7 @@ fn build_palette(tree: Tree) -> Vec<Rgb8> {
             less.append(&mut greater_equal);
             less
         }
-        Tree::Leaf(leaf) => vec![weighted_average_color(&leaf.color_counts)],
+        Tree::Leaf(leaf) => vec![average_color(&leaf.colors)],
     }
 }
 
