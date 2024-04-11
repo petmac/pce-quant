@@ -2,12 +2,12 @@ use std::{error::Error, fs::File, io::BufWriter, path::PathBuf};
 
 use png::{BitDepth, ColorType, Decoder, Encoder, Transformations};
 
-use crate::color::TrueColor;
+use crate::color::Rgb8;
 
 pub struct TrueColorImage {
     pub width: usize,
     pub height: usize,
-    pub pixels: Vec<TrueColor>,
+    pub pixels: Vec<Rgb8>,
 }
 
 impl TrueColorImage {
@@ -17,7 +17,7 @@ impl TrueColorImage {
         let mut reader = decoder.read_info()?;
         let mut buf = vec![0; reader.output_buffer_size()];
         let info = reader.next_frame(&mut buf)?;
-        let pixels = buf.chunks_exact(3).map(TrueColor::new).collect();
+        let pixels = buf.chunks_exact(3).map(Rgb8::new).collect();
 
         Ok(TrueColorImage {
             width: info.width as usize,
