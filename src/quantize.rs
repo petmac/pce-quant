@@ -34,11 +34,9 @@ pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
 }
 
 fn build_tree(colors: &[Rgb8], cut_channel: Channel) -> Tree {
-    let avg_color = average_color(colors);
     match cut_channel {
         Channel::Red => {
-            let (greater_equal, less): (Vec<Rgb8>, Vec<Rgb8>) =
-                colors.iter().partition(|&col| col.r >= avg_color.r);
+            let (greater_equal, less) = partition_colors_by(colors, red);
             let node = Node {
                 greater_equal: build_tree(&greater_equal, Channel::Green),
                 less: build_tree(&less, Channel::Green),
@@ -46,8 +44,7 @@ fn build_tree(colors: &[Rgb8], cut_channel: Channel) -> Tree {
             Tree::Node(Box::new(node))
         }
         Channel::Green => {
-            let (greater_equal, less): (Vec<Rgb8>, Vec<Rgb8>) =
-                colors.iter().partition(|&col| col.g >= avg_color.g);
+            let (greater_equal, less) = partition_colors_by(colors, green);
             let node = Node {
                 greater_equal: build_tree(&greater_equal, Channel::Blue),
                 less: build_tree(&less, Channel::Blue),
@@ -55,8 +52,7 @@ fn build_tree(colors: &[Rgb8], cut_channel: Channel) -> Tree {
             Tree::Node(Box::new(node))
         }
         Channel::Blue => {
-            let (greater_equal, less): (Vec<Rgb8>, Vec<Rgb8>) =
-                colors.iter().partition(|&col| col.b >= avg_color.b);
+            let (greater_equal, less) = partition_colors_by(colors, blue);
             let node = Node {
                 greater_equal: Tree::Leaf(Leaf {
                     colors: greater_equal,
@@ -66,6 +62,29 @@ fn build_tree(colors: &[Rgb8], cut_channel: Channel) -> Tree {
             Tree::Node(Box::new(node))
         }
     }
+}
+
+fn red(color: &Rgb8) -> u8 {
+    color.r
+}
+
+fn green(color: &Rgb8) -> u8 {
+    color.g
+}
+
+fn blue(color: &Rgb8) -> u8 {
+    color.b
+}
+
+fn partition_colors_by<F>(colors: &[Rgb8], extract_component: F) -> (Vec<Rgb8>, Vec<Rgb8>)
+where
+    F: Fn(&Rgb8) -> u8,
+{
+    let avg_color = average_color(colors);
+    let avg_component = extract_component(&avg_color);
+    colors
+        .iter()
+        .partition(|&col| extract_component(col) >= avg_component)
 }
 
 fn average_color(colors: &[Rgb8]) -> Rgb8 {
