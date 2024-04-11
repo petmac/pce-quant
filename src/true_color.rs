@@ -2,6 +2,8 @@ use std::{error::Error, fs::File, io::BufWriter, path::PathBuf};
 
 use png::{BitDepth, ColorType, Decoder, Encoder, Transformations};
 
+use crate::color::TrueColor;
+
 pub struct TrueColorImage {
     pub width: usize,
     pub height: usize,
@@ -41,22 +43,5 @@ impl TrueColorImage {
         writer.write_image_data(&data)?;
 
         Ok(())
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct TrueColor {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
-}
-
-impl TrueColor {
-    pub fn new(rgb: &[u8]) -> Self {
-        TrueColor {
-            r: rgb[0],
-            g: rgb[1],
-            b: rgb[2],
-        }
     }
 }

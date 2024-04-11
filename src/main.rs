@@ -1,3 +1,4 @@
+mod color;
 mod indexed;
 mod quantize;
 mod true_color;

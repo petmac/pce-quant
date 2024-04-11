@@ -1,7 +1,4 @@
-use crate::{
-    indexed::IndexedImage,
-    true_color::{TrueColor, TrueColorImage},
-};
+use crate::{color::TrueColor, indexed::IndexedImage, true_color::TrueColorImage};
 
 pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
     let palette: Vec<TrueColor> = input_image.pixels[0..16].iter().copied().collect();

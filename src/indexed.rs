@@ -2,7 +2,7 @@ use std::{error::Error, fs::File, io::BufWriter, path::PathBuf};
 
 use png::{BitDepth, ColorType, Encoder};
 
-use crate::true_color::TrueColor;
+use crate::color::TrueColor;
 
 pub struct IndexedImage {
     pub width: usize,
