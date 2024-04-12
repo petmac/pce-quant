@@ -49,14 +49,10 @@ fn build_tree(histogram: Histogram) -> Tree {
     loop {
         let histogram_with_most_pixels = leaves
             .iter_mut()
+            .filter(|histogram| histogram.len() > 1)
             .max_by_key(|histogram| pixel_count(histogram));
         match histogram_with_most_pixels {
             Some(histogram) => {
-                if histogram.len() <= 1 {
-                    println!("Stopping because leaf only has 1 color");
-                    break;
-                }
-
                 let (greater_equal, less) = partition_colors(histogram);
                 if greater_equal.is_empty() || less.is_empty() {
                     println!("Stopping because split failed");
@@ -72,7 +68,7 @@ fn build_tree(histogram: Histogram) -> Tree {
                 }
             }
             None => {
-                println!("Stopping because there are no leaves");
+                println!("Stopping because there are no leaves which can be split");
                 break;
             }
         }
