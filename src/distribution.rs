@@ -2,12 +2,12 @@ use std::collections::BTreeMap;
 
 use crate::color::{ColorF, ColorU8};
 
-pub struct Histogram {
+pub struct Distribution {
     color_pixel_counts: BTreeMap<ColorU8, usize>,
 }
 
-impl Histogram {
-    pub fn new(pixels: &[ColorU8]) -> Histogram {
+impl Distribution {
+    pub fn new(pixels: &[ColorU8]) -> Distribution {
         let mut color_pixel_counts = BTreeMap::new();
 
         for color in pixels {
@@ -19,7 +19,7 @@ impl Histogram {
             }
         }
 
-        Histogram { color_pixel_counts }
+        Distribution { color_pixel_counts }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -61,7 +61,7 @@ impl Histogram {
         }
     }
 
-    pub fn partition<F>(&self, mut f: F) -> (Histogram, Histogram)
+    pub fn partition<F>(&self, mut f: F) -> (Distribution, Distribution)
     where
         F: FnMut(&ColorU8) -> bool,
     {
@@ -70,10 +70,10 @@ impl Histogram {
             .iter()
             .partition(|&(color, _count)| f(color));
         (
-            Histogram {
+            Distribution {
                 color_pixel_counts: f_true,
             },
-            Histogram {
+            Distribution {
                 color_pixel_counts: f_false,
             },
         )

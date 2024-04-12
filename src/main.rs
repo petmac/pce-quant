@@ -1,5 +1,5 @@
 mod color;
-mod histogram;
+mod distribution;
 mod indexed;
 mod quantize;
 mod true_color;

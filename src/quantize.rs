@@ -2,7 +2,7 @@ use std::cmp::max;
 
 use crate::{
     color::{ColorF, ColorU8},
-    histogram::Histogram,
+    distribution::Distribution,
     indexed::IndexedImage,
     true_color::TrueColorImage,
 };
@@ -10,12 +10,12 @@ use crate::{
 const MAX_COLORS: usize = 16;
 
 struct Tree {
-    leaves: Vec<Histogram>,
+    leaves: Vec<Distribution>,
 }
 
 pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
-    let histogram = Histogram::new(&input_image.pixels);
-    let tree = build_tree(histogram);
+    let distribution = Distribution::new(&input_image.pixels);
+    let tree = build_tree(distribution);
     let palette: Vec<ColorU8> = build_palette(tree);
     let pixels = remap(&input_image.pixels, &palette);
 
@@ -27,23 +27,23 @@ pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
     }
 }
 
-fn build_tree(histogram: Histogram) -> Tree {
-    let mut leaves = vec![histogram];
+fn build_tree(distribution: Distribution) -> Tree {
+    let mut leaves = vec![distribution];
 
     loop {
-        let histogram_with_most_pixels = leaves
+        let leaf_with_most_pixels = leaves
             .iter_mut()
-            .filter(|histogram| histogram.unique_color_count() > 1)
-            .max_by_key(|histogram| histogram.pixel_count());
-        match histogram_with_most_pixels {
-            Some(histogram) => {
-                let (greater_equal, less) = partition_colors(histogram);
+            .filter(|distribution| distribution.unique_color_count() > 1)
+            .max_by_key(|distribution| distribution.pixel_count());
+        match leaf_with_most_pixels {
+            Some(distribution) => {
+                let (greater_equal, less) = partition_colors(distribution);
                 if greater_equal.is_empty() || less.is_empty() {
                     println!("Stopping because split failed");
                     break;
                 }
 
-                *histogram = greater_equal;
+                *distribution = greater_equal;
                 leaves.push(less);
 
                 if leaves.len() >= MAX_COLORS {
@@ -61,13 +61,13 @@ fn build_tree(histogram: Histogram) -> Tree {
     Tree { leaves: leaves }
 }
 
-fn partition_colors(histogram: &Histogram) -> (Histogram, Histogram) {
-    let max_r = histogram.unique_colors().map(red).max();
-    let min_r = histogram.unique_colors().map(red).min();
-    let max_g = histogram.unique_colors().map(green).max();
-    let min_g = histogram.unique_colors().map(green).min();
-    let max_b = histogram.unique_colors().map(blue).max();
-    let min_b = histogram.unique_colors().map(blue).min();
+fn partition_colors(distribution: &Distribution) -> (Distribution, Distribution) {
+    let max_r = distribution.unique_colors().map(red).max();
+    let min_r = distribution.unique_colors().map(red).min();
+    let max_g = distribution.unique_colors().map(green).max();
+    let min_g = distribution.unique_colors().map(green).min();
+    let max_b = distribution.unique_colors().map(blue).max();
+    let min_b = distribution.unique_colors().map(blue).min();
     match (max_r, min_r, max_g, min_g, max_b, min_b) {
         (Some(max_r), Some(min_r), Some(max_g), Some(min_g), Some(max_b), Some(min_b)) => {
             let r_range = max_r - min_r;
@@ -82,9 +82,9 @@ fn partition_colors(histogram: &Histogram) -> (Histogram, Histogram) {
                 } else {
                     (blue, blue_f)
                 };
-            partition_colors_by(histogram, extract_component, extract_component_f)
+            partition_colors_by(distribution, extract_component, extract_component_f)
         }
-        (_, _, _, _, _, _) => (Histogram::new(&[]), Histogram::new(&[])),
+        (_, _, _, _, _, _) => (Distribution::new(&[]), Distribution::new(&[])),
     }
 }
 
@@ -113,22 +113,22 @@ fn blue_f(color: &ColorF) -> f64 {
 }
 
 fn partition_colors_by<F, G>(
-    histogram: &Histogram,
+    distribution: &Distribution,
     extract_component: F,
     extract_component_f: G,
-) -> (Histogram, Histogram)
+) -> (Distribution, Distribution)
 where
     F: Fn(&ColorU8) -> u8,
     G: Fn(&ColorF) -> f64,
 {
-    let avg_component = extract_component_f(&histogram.average_color());
-    histogram.partition(|color| extract_component(color) as f64 >= avg_component)
+    let avg_component = extract_component_f(&distribution.average_color());
+    distribution.partition(|color| extract_component(color) as f64 >= avg_component)
 }
 
 fn build_palette(tree: Tree) -> Vec<ColorU8> {
     tree.leaves
         .iter()
-        .map(Histogram::average_color)
+        .map(Distribution::average_color)
         .map(|color| color.into())
         .collect()
 }
