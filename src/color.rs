@@ -14,3 +14,19 @@ impl Color {
         }
     }
 }
+
+#[derive()]
+pub struct ColorF {
+    pub r: f64,
+    pub g: f64,
+    pub b: f64,
+}
+
+impl Into<Color> for ColorF {
+    fn into(self) -> Color {
+        let r = self.r.round() as u8;
+        let g = self.g.round() as u8;
+        let b = self.b.round() as u8;
+        Color { r, g, b }
+    }
+}
