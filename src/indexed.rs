@@ -2,12 +2,12 @@ use std::{error::Error, fs::File, io::BufWriter, path::PathBuf};
 
 use png::{BitDepth, ColorType, Encoder};
 
-use crate::color::Color;
+use crate::color::ColorU8;
 
 pub struct IndexedImage {
     pub width: usize,
     pub height: usize,
-    pub palette: Vec<Color>,
+    pub palette: Vec<ColorU8>,
     pub pixels: Vec<u8>,
 }
 

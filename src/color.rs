@@ -1,13 +1,13 @@
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub struct Color {
+pub struct ColorU8 {
     pub r: u8,
     pub g: u8,
     pub b: u8,
 }
 
-impl Color {
+impl ColorU8 {
     pub fn new(rgb: &[u8]) -> Self {
-        Color {
+        ColorU8 {
             r: rgb[0],
             g: rgb[1],
             b: rgb[2],
@@ -22,11 +22,11 @@ pub struct ColorF {
     pub b: f64,
 }
 
-impl Into<Color> for ColorF {
-    fn into(self) -> Color {
+impl Into<ColorU8> for ColorF {
+    fn into(self) -> ColorU8 {
         let r = self.r.round() as u8;
         let g = self.g.round() as u8;
         let b = self.b.round() as u8;
-        Color { r, g, b }
+        ColorU8 { r, g, b }
     }
 }

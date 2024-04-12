@@ -1,7 +1,7 @@
 use std::{cmp::max, collections::BTreeMap};
 
 use crate::{
-    color::{Color, ColorF},
+    color::{ColorF, ColorU8},
     indexed::IndexedImage,
     true_color::TrueColorImage,
 };
@@ -12,12 +12,12 @@ struct Tree {
     leaves: Vec<Histogram>,
 }
 
-type Histogram = BTreeMap<Color, usize>;
+type Histogram = BTreeMap<ColorU8, usize>;
 
 pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
     let histogram = build_histogram(&input_image.pixels);
     let tree = build_tree(histogram);
-    let palette: Vec<Color> = build_palette(tree);
+    let palette: Vec<ColorU8> = build_palette(tree);
     let pixels = remap(&input_image.pixels, &palette);
 
     IndexedImage {
@@ -28,7 +28,7 @@ pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
     }
 }
 
-fn build_histogram(pixels: &[Color]) -> Histogram {
+fn build_histogram(pixels: &[ColorU8]) -> Histogram {
     let mut histogram = Histogram::new();
 
     for color in pixels {
@@ -94,7 +94,7 @@ fn partition_colors(histogram: &Histogram) -> (Histogram, Histogram) {
             let g_range = max_g - min_g;
             let b_range = max_b - min_b;
             let max_range = max(r_range, max(g_range, b_range));
-            let (extract_component, extract_component_f): (fn(&Color) -> u8, fn(&ColorF) -> f64) =
+            let (extract_component, extract_component_f): (fn(&ColorU8) -> u8, fn(&ColorF) -> f64) =
                 if max_range == r_range {
                     (red, red_f)
                 } else if max_range == g_range {
@@ -108,15 +108,15 @@ fn partition_colors(histogram: &Histogram) -> (Histogram, Histogram) {
     }
 }
 
-fn red(color: &Color) -> u8 {
+fn red(color: &ColorU8) -> u8 {
     color.r
 }
 
-fn green(color: &Color) -> u8 {
+fn green(color: &ColorU8) -> u8 {
     color.g
 }
 
-fn blue(color: &Color) -> u8 {
+fn blue(color: &ColorU8) -> u8 {
     color.b
 }
 
@@ -138,7 +138,7 @@ fn partition_colors_by<F, G>(
     extract_component_f: G,
 ) -> (Histogram, Histogram)
 where
-    F: Fn(&Color) -> u8,
+    F: Fn(&ColorU8) -> u8,
     G: Fn(&ColorF) -> f64,
 {
     let avg_color = average_color(histogram);
@@ -171,7 +171,7 @@ fn average_color(histogram: &Histogram) -> ColorF {
     }
 }
 
-fn build_palette(tree: Tree) -> Vec<Color> {
+fn build_palette(tree: Tree) -> Vec<ColorU8> {
     tree.leaves
         .iter()
         .map(average_color)
@@ -179,14 +179,14 @@ fn build_palette(tree: Tree) -> Vec<Color> {
         .collect()
 }
 
-fn remap(pixels: &[Color], palette: &[Color]) -> Vec<u8> {
+fn remap(pixels: &[ColorU8], palette: &[ColorU8]) -> Vec<u8> {
     pixels
         .iter()
         .map(|col| nearest_color_in_palette(col, palette))
         .collect()
 }
 
-fn nearest_color_in_palette(ideal_color: &Color, palette: &[Color]) -> u8 {
+fn nearest_color_in_palette(ideal_color: &ColorU8, palette: &[ColorU8]) -> u8 {
     let nearest = palette
         .iter()
         .enumerate()
@@ -197,7 +197,7 @@ fn nearest_color_in_palette(ideal_color: &Color, palette: &[Color]) -> u8 {
     }
 }
 
-fn color_diff(ideal_color: &Color, palette_color: &Color) -> usize {
+fn color_diff(ideal_color: &ColorU8, palette_color: &ColorU8) -> usize {
     ideal_color.r.abs_diff(palette_color.r) as usize
         + ideal_color.g.abs_diff(palette_color.g) as usize
         + ideal_color.b.abs_diff(palette_color.b) as usize
