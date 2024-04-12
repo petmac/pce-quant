@@ -1,6 +1,6 @@
 use crate::{
     bsp::BspTree,
-    color::{ColorU3, ColorU8},
+    color::{ColorF, ColorU3, ColorU8},
     distribution::Distribution,
     indexed::IndexedImage,
     true_color::TrueColorImage,
@@ -24,7 +24,7 @@ fn build_palette(tree: BspTree) -> Vec<ColorU3> {
     tree.leaves
         .iter()
         .map(Distribution::average_color)
-        .map(|color| color.into())
+        .map(ColorF::into)
         .collect()
 }
 
