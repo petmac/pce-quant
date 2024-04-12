@@ -36,14 +36,14 @@ fn nearest_color_in_palette(ideal_color: &ColorU8, palette: &[ColorU8]) -> u8 {
     let nearest = palette
         .iter()
         .enumerate()
-        .min_by_key(|&(_index, palette_color)| color_diff(ideal_color, palette_color));
+        .min_by_key(|&(_index, palette_color)| manhattan_distance(ideal_color, palette_color));
     match nearest {
         Some((nearest_index, _nearest_col)) => nearest_index as u8,
         None => 0,
     }
 }
 
-fn color_diff(ideal_color: &ColorU8, palette_color: &ColorU8) -> usize {
+fn manhattan_distance(ideal_color: &ColorU8, palette_color: &ColorU8) -> usize {
     ideal_color.r.abs_diff(palette_color.r) as usize
         + ideal_color.g.abs_diff(palette_color.g) as usize
         + ideal_color.b.abs_diff(palette_color.b) as usize
