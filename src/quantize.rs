@@ -1,12 +1,15 @@
 use crate::{
-    bsp::BspTree, color::ColorU8, distribution::Distribution, indexed::IndexedImage,
+    bsp::BspTree,
+    color::{ColorU3, ColorU8},
+    distribution::Distribution,
+    indexed::IndexedImage,
     true_color::TrueColorImage,
 };
 
 pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
     let distribution = Distribution::new(&input_image.pixels);
     let tree = BspTree::new(distribution);
-    let palette: Vec<ColorU8> = build_palette(tree);
+    let palette: Vec<ColorU3> = build_palette(tree);
     let pixels = remap(&input_image.pixels, &palette);
 
     IndexedImage {
@@ -17,7 +20,7 @@ pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
     }
 }
 
-fn build_palette(tree: BspTree) -> Vec<ColorU8> {
+fn build_palette(tree: BspTree) -> Vec<ColorU3> {
     tree.leaves
         .iter()
         .map(Distribution::average_color)
@@ -25,10 +28,12 @@ fn build_palette(tree: BspTree) -> Vec<ColorU8> {
         .collect()
 }
 
-fn remap(pixels: &[ColorU8], palette: &[ColorU8]) -> Vec<u8> {
+fn remap(pixels: &[ColorU8], palette: &[ColorU3]) -> Vec<u8> {
+    let u8_palette: Vec<ColorU8> = palette.iter().copied().map(ColorU3::into).collect();
+
     pixels
         .iter()
-        .map(|col| nearest_color_in_palette(col, palette))
+        .map(|col| nearest_color_in_palette(col, &u8_palette))
         .collect()
 }
 

@@ -2,12 +2,12 @@ use std::{error::Error, fs::File, io::BufWriter, path::PathBuf};
 
 use png::{BitDepth, ColorType, Encoder};
 
-use crate::color::ColorU8;
+use crate::color::ColorU3;
 
 pub struct IndexedImage {
     pub width: usize,
     pub height: usize,
-    pub palette: Vec<ColorU8>,
+    pub palette: Vec<ColorU3>,
     pub pixels: Vec<u8>,
 }
 
@@ -16,7 +16,8 @@ impl IndexedImage {
         let palette: Vec<u8> = self
             .palette
             .iter()
-            .flat_map(|color| [color.r, color.g, color.b])
+            .copied()
+            .flat_map(<ColorU3 as Into<[u8; 3]>>::into)
             .collect();
 
         let file = File::create(path)?;
