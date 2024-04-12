@@ -1,3 +1,4 @@
+mod bsp;
 mod color;
 mod distribution;
 mod indexed;
