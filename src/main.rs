@@ -20,7 +20,8 @@ struct Cli {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
-    println!("Input: {}", cli.input_path.display());
+    println!("Input:  {}", cli.input_path.display());
+    println!("Output: {}", cli.output_path.display());
 
     let input_image = TrueColorImage::decode(&cli.input_path)?;
     let output_image: IndexedImage = quantize(&input_image);
