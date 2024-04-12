@@ -1,14 +1,11 @@
 use crate::{
-    bsp::{partition_distribution, BspTree},
-    color::ColorU8,
-    distribution::Distribution,
-    indexed::IndexedImage,
+    bsp::BspTree, color::ColorU8, distribution::Distribution, indexed::IndexedImage,
     true_color::TrueColorImage,
 };
 
 pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
     let distribution = Distribution::new(&input_image.pixels);
-    let tree = partition_distribution(distribution);
+    let tree = BspTree::new(distribution);
     let palette: Vec<ColorU8> = build_palette(tree);
     let pixels = remap(&input_image.pixels, &palette);
 

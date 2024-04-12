@@ -11,38 +11,40 @@ pub struct BspTree {
     pub leaves: Vec<Distribution>,
 }
 
-pub fn partition_distribution(distribution: Distribution) -> BspTree {
-    let mut leaves = vec![distribution];
+impl BspTree {
+    pub fn new(distribution: Distribution) -> BspTree {
+        let mut leaves = vec![distribution];
 
-    loop {
-        let leaf_with_most_pixels = leaves
-            .iter_mut()
-            .filter(|leaf| leaf.unique_color_count() > 1)
-            .max_by_key(|leaf| leaf.pixel_count());
-        match leaf_with_most_pixels {
-            Some(leaf) => {
-                let (greater_equal, less) = partition_leaf(leaf);
-                if greater_equal.is_empty() || less.is_empty() {
-                    println!("Stopping because split failed");
+        loop {
+            let leaf_with_most_pixels = leaves
+                .iter_mut()
+                .filter(|leaf| leaf.unique_color_count() > 1)
+                .max_by_key(|leaf| leaf.pixel_count());
+            match leaf_with_most_pixels {
+                Some(leaf) => {
+                    let (greater_equal, less) = partition_leaf(leaf);
+                    if greater_equal.is_empty() || less.is_empty() {
+                        println!("Stopping because split failed");
+                        break;
+                    }
+
+                    *leaf = greater_equal;
+                    leaves.push(less);
+
+                    if leaves.len() >= MAX_COLORS {
+                        println!("Stopping because we've got enough leaves");
+                        break;
+                    }
+                }
+                None => {
+                    println!("Stopping because there are no leaves which can be split");
                     break;
                 }
-
-                *leaf = greater_equal;
-                leaves.push(less);
-
-                if leaves.len() >= MAX_COLORS {
-                    println!("Stopping because we've got enough leaves");
-                    break;
-                }
-            }
-            None => {
-                println!("Stopping because there are no leaves which can be split");
-                break;
             }
         }
-    }
 
-    BspTree { leaves: leaves }
+        BspTree { leaves: leaves }
+    }
 }
 
 fn partition_leaf(leaf: &Distribution) -> (Distribution, Distribution) {
