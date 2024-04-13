@@ -4,12 +4,13 @@ use crate::{
     distribution::Distribution,
     image::Image,
     indexed_image::IndexedImage,
+    palette::Palette,
 };
 
 pub fn quantize(input_image: &Image) -> IndexedImage {
     let distribution = Distribution::new(&input_image.pixels);
     let tree = BspTree::new(distribution);
-    let palette: Vec<ColorU3> = build_palette(tree);
+    let palette = build_palette(tree);
     let pixels = remap(&input_image.pixels, &palette);
 
     IndexedImage {
@@ -20,7 +21,7 @@ pub fn quantize(input_image: &Image) -> IndexedImage {
     }
 }
 
-fn build_palette(tree: BspTree) -> Vec<ColorU3> {
+fn build_palette(tree: BspTree) -> Palette {
     tree.leaves
         .iter()
         .map(Distribution::average_color)

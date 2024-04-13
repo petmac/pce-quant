@@ -1,8 +1,8 @@
-use crate::color::ColorU3;
+use crate::palette::Palette;
 
 pub struct IndexedImage {
     pub width: usize,
     pub height: usize,
-    pub palette: Vec<ColorU3>,
+    pub palette: Palette,
     pub pixels: Vec<u8>,
 }

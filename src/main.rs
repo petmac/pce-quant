@@ -3,6 +3,7 @@ mod color;
 mod distribution;
 mod image;
 mod indexed_image;
+mod palette;
 mod quantize;
 mod tiled_image;
 
