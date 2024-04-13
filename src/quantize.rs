@@ -25,12 +25,12 @@ fn build_palette(tree: BspTree) -> Palette {
     tree.leaves
         .iter()
         .map(Distribution::average_color)
-        .map(ColorF::into)
+        .map(ColorU3::from)
         .collect()
 }
 
 fn remap(pixels: &[ColorU8], palette: &[ColorU3]) -> Vec<u8> {
-    let u8_palette: Vec<ColorU8> = palette.iter().copied().map(ColorU3::into).collect();
+    let u8_palette: Vec<ColorU8> = palette.iter().copied().map(ColorU8::from).collect();
 
     pixels
         .iter()
