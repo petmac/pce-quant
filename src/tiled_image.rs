@@ -1,19 +1,19 @@
-use crate::{color::ColorU8, true_color::TrueColorImage};
+use crate::{color::ColorU8, image::Image};
 
 pub const TILE_SIZE: usize = 8;
 
 pub struct TiledImage {
     pub width_in_tiles: usize,
     pub height_in_tiles: usize,
-    pub tiles: Vec<TrueColorTile>,
+    pub tiles: Vec<Tile>,
 }
 
-impl From<TrueColorImage> for TiledImage {
-    fn from(source_image: TrueColorImage) -> Self {
+impl From<Image> for TiledImage {
+    fn from(source_image: Image) -> Self {
         let width_in_tiles = source_image.width / TILE_SIZE;
         let height_in_tiles = source_image.height / TILE_SIZE;
         let mut tiles = vec![
-            TrueColorTile {
+            Tile {
                 pixels: [[ColorU8 {
                     r: 255,
                     g: 0,
@@ -50,8 +50,8 @@ impl From<TrueColorImage> for TiledImage {
     }
 }
 
-impl From<TiledImage> for TrueColorImage {
-    fn from(source_image: TiledImage) -> TrueColorImage {
+impl From<TiledImage> for Image {
+    fn from(source_image: TiledImage) -> Image {
         let width = source_image.width_in_tiles * TILE_SIZE;
         let height = source_image.height_in_tiles * TILE_SIZE;
         let mut pixels = vec![
@@ -82,7 +82,7 @@ impl From<TiledImage> for TrueColorImage {
             }
         }
 
-        TrueColorImage {
+        Image {
             width,
             height,
             pixels,
@@ -91,6 +91,6 @@ impl From<TiledImage> for TrueColorImage {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub struct TrueColorTile {
+pub struct Tile {
     pub pixels: [[ColorU8; TILE_SIZE]; TILE_SIZE],
 }

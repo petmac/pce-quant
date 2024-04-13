@@ -2,11 +2,11 @@ use crate::{
     bsp::BspTree,
     color::{ColorF, ColorU3, ColorU8},
     distribution::Distribution,
-    indexed::IndexedImage,
-    true_color::TrueColorImage,
+    image::Image,
+    indexed_image::IndexedImage,
 };
 
-pub fn quantize(input_image: &TrueColorImage) -> IndexedImage {
+pub fn quantize(input_image: &Image) -> IndexedImage {
     let distribution = Distribution::new(&input_image.pixels);
     let tree = BspTree::new(distribution);
     let palette: Vec<ColorU3> = build_palette(tree);

@@ -4,14 +4,14 @@ use png::{BitDepth, ColorType, Decoder, Encoder, Transformations};
 
 use crate::color::ColorU8;
 
-pub struct TrueColorImage {
+pub struct Image {
     pub width: usize,
     pub height: usize,
     pub pixels: Vec<ColorU8>,
 }
 
-impl TrueColorImage {
-    pub fn decode(path: &PathBuf) -> Result<TrueColorImage, Box<dyn Error>> {
+impl Image {
+    pub fn decode(path: &PathBuf) -> Result<Image, Box<dyn Error>> {
         let mut decoder = Decoder::new(File::open(path)?);
         decoder.set_transformations(Transformations::EXPAND);
         let mut reader = decoder.read_info()?;
@@ -19,7 +19,7 @@ impl TrueColorImage {
         let info = reader.next_frame(&mut buf)?;
         let pixels = buf.chunks_exact(3).map(ColorU8::new).collect();
 
-        Ok(TrueColorImage {
+        Ok(Image {
             width: info.width as usize,
             height: info.height as usize,
             pixels,

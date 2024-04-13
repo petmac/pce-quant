@@ -1,16 +1,16 @@
 mod bsp;
 mod color;
 mod distribution;
-mod indexed;
+mod image;
+mod indexed_image;
 mod quantize;
-mod tiled;
-mod true_color;
+mod tiled_image;
 
 use std::{error::Error, path::PathBuf};
 
 use clap::Parser;
-use tiled::TiledImage;
-use true_color::TrueColorImage;
+use image::Image;
+use tiled_image::TiledImage;
 
 #[derive(Parser)]
 struct Cli {
@@ -23,9 +23,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Input:  {}", cli.input_path.display());
     println!("Output: {}", cli.output_path.display());
 
-    let input_image = TrueColorImage::decode(&cli.input_path)?;
+    let input_image = Image::decode(&cli.input_path)?;
     let tiled_image = TiledImage::from(input_image);
-    let output_image = TrueColorImage::from(tiled_image);
+    let output_image = Image::from(tiled_image);
     output_image.encode(&cli.output_path)?;
 
     Ok(())
