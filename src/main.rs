@@ -3,13 +3,13 @@ mod color;
 mod distribution;
 mod indexed;
 mod quantize;
+mod tiled;
 mod true_color;
 
 use std::{error::Error, path::PathBuf};
 
 use clap::Parser;
-use indexed::IndexedImage;
-use quantize::quantize;
+use tiled::TiledImage;
 use true_color::TrueColorImage;
 
 #[derive(Parser)]
@@ -24,7 +24,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("Output: {}", cli.output_path.display());
 
     let input_image = TrueColorImage::decode(&cli.input_path)?;
-    let output_image: IndexedImage = quantize(&input_image);
+    let tiled_image = TiledImage::from(input_image);
+    let output_image = TrueColorImage::from(tiled_image);
     output_image.encode(&cli.output_path)?;
 
     Ok(())
