@@ -2,15 +2,15 @@ use std::cmp::max;
 
 use crate::{
     color::{ColorF, ColorU8},
-    distribution::Distribution,
+    color_distribution::ColorDistribution,
 };
 
 pub struct BspTree {
-    pub leaves: Vec<Distribution>,
+    pub leaves: Vec<ColorDistribution>,
 }
 
 impl BspTree {
-    pub fn new(distribution: Distribution, max_leaves: usize) -> BspTree {
+    pub fn new(distribution: ColorDistribution, max_leaves: usize) -> BspTree {
         let mut leaves = vec![distribution];
 
         loop {
@@ -44,7 +44,7 @@ impl BspTree {
     }
 }
 
-fn partition_leaf(leaf: &Distribution) -> (Distribution, Distribution) {
+fn partition_leaf(leaf: &ColorDistribution) -> (ColorDistribution, ColorDistribution) {
     let max_r = leaf.unique_colors().map(red).max();
     let min_r = leaf.unique_colors().map(red).min();
     let max_g = leaf.unique_colors().map(green).max();
@@ -67,7 +67,7 @@ fn partition_leaf(leaf: &Distribution) -> (Distribution, Distribution) {
                 };
             partition_leaf_by(leaf, extract_component, extract_component_f)
         }
-        (_, _, _, _, _, _) => (Distribution::new(&[]), Distribution::new(&[])),
+        (_, _, _, _, _, _) => (ColorDistribution::new(&[]), ColorDistribution::new(&[])),
     }
 }
 
@@ -96,10 +96,10 @@ fn blue_f(color: &ColorF) -> f64 {
 }
 
 fn partition_leaf_by<F, G>(
-    leaf: &Distribution,
+    leaf: &ColorDistribution,
     extract_component: F,
     extract_component_f: G,
-) -> (Distribution, Distribution)
+) -> (ColorDistribution, ColorDistribution)
 where
     F: Fn(&ColorU8) -> u8,
     G: Fn(&ColorF) -> f64,

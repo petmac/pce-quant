@@ -1,7 +1,7 @@
 use crate::{
     bsp::BspTree,
     color::{ColorU3, ColorU8},
-    distribution::Distribution,
+    color_distribution::ColorDistribution,
     image::Image,
     palette::{PaletteU3, PaletteU8, MAX_PALETTE_COLORS},
     remap::remap,
@@ -16,7 +16,7 @@ pub struct IndexedImage {
 
 impl From<Image> for IndexedImage {
     fn from(input_image: Image) -> IndexedImage {
-        let distribution = Distribution::new(&input_image.pixels);
+        let distribution = ColorDistribution::new(&input_image.pixels);
         let tree = BspTree::new(distribution, MAX_PALETTE_COLORS);
         let palette = build_palette(tree);
         let palette_u8: PaletteU8 = palette.iter().copied().map(ColorU8::from).collect();
@@ -34,7 +34,7 @@ impl From<Image> for IndexedImage {
 fn build_palette(tree: BspTree) -> PaletteU3 {
     tree.leaves
         .iter()
-        .map(Distribution::average_color)
+        .map(ColorDistribution::average_color)
         .map(ColorU3::from)
         .collect()
 }

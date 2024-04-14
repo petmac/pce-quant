@@ -3,7 +3,7 @@ use std::iter::zip;
 use crate::{
     bsp::BspTree,
     color::{ColorU3, ColorU8},
-    distribution::Distribution,
+    color_distribution::ColorDistribution,
     palette::{PaletteU3, PaletteU8, MAX_PALETTE_COLORS},
     remap::{nearest_color_in_palette, remap},
     tiled_image::{Tile, TiledImage, TILE_SIZE},
@@ -75,22 +75,22 @@ fn tile_palette_indices(tiles: &[Tile]) -> Vec<u8> {
         .map(|distribution| distribution.average_color())
         .map(ColorU8::from)
         .collect();
-    let distribution = Distribution::new(&tile_average_colors);
+    let distribution = ColorDistribution::new(&tile_average_colors);
     let tree = BspTree::new(distribution, MAX_PALETTES);
     let palette = build_palette(tree);
     let tile_palette_indices = remap(&tile_average_colors, &palette);
     tile_palette_indices
 }
 
-fn tile_color_distribution(tile: &Tile) -> Distribution {
+fn tile_color_distribution(tile: &Tile) -> ColorDistribution {
     let colors: Vec<ColorU8> = tile.iter().flatten().copied().collect();
-    Distribution::new(&colors)
+    ColorDistribution::new(&colors)
 }
 
 fn build_palette(tree: BspTree) -> PaletteU8 {
     tree.leaves
         .iter()
-        .map(Distribution::average_color)
+        .map(ColorDistribution::average_color)
         .map(ColorU8::from)
         .collect()
 }
@@ -107,14 +107,14 @@ fn palette_tile_indices(tile_palette_indices: &[u8]) -> Vec<Vec<usize>> {
     palette_tile_indices
 }
 
-fn tiles_color_distribution(tiles: &[&Tile]) -> Distribution {
+fn tiles_color_distribution(tiles: &[&Tile]) -> ColorDistribution {
     let colors: Vec<ColorU8> = tiles
         .iter()
         .map(|&tile| tile.iter().flatten())
         .flatten()
         .copied()
         .collect();
-    Distribution::new(&colors)
+    ColorDistribution::new(&colors)
 }
 
 fn remap_tile(ideal_tile: &Tile, palette: &[ColorU8]) -> IndexedPattern {

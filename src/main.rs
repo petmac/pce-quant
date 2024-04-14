@@ -1,6 +1,6 @@
 mod bsp;
 mod color;
-mod distribution;
+mod color_distribution;
 mod image;
 mod indexed_image;
 mod palette;

@@ -2,12 +2,12 @@ use std::collections::BTreeMap;
 
 use crate::color::{ColorF, ColorU8};
 
-pub struct Distribution {
+pub struct ColorDistribution {
     color_pixel_counts: BTreeMap<ColorU8, usize>,
 }
 
-impl Distribution {
-    pub fn new(pixels: &[ColorU8]) -> Distribution {
+impl ColorDistribution {
+    pub fn new(pixels: &[ColorU8]) -> ColorDistribution {
         let mut color_pixel_counts = BTreeMap::new();
 
         for color in pixels {
@@ -19,7 +19,7 @@ impl Distribution {
             }
         }
 
-        Distribution { color_pixel_counts }
+        ColorDistribution { color_pixel_counts }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -61,7 +61,7 @@ impl Distribution {
         }
     }
 
-    pub fn partition<F>(&self, mut f: F) -> (Distribution, Distribution)
+    pub fn partition<F>(&self, mut f: F) -> (ColorDistribution, ColorDistribution)
     where
         F: FnMut(&ColorU8) -> bool,
     {
@@ -70,10 +70,10 @@ impl Distribution {
             .iter()
             .partition(|&(color, _count)| f(color));
         (
-            Distribution {
+            ColorDistribution {
                 color_pixel_counts: f_true,
             },
-            Distribution {
+            ColorDistribution {
                 color_pixel_counts: f_false,
             },
         )
