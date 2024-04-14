@@ -3,14 +3,14 @@ use crate::{
     color::{ColorU3, ColorU8},
     distribution::Distribution,
     image::Image,
-    palette::Palette,
+    palette::PaletteU3,
     remap::remap,
 };
 
 pub struct IndexedImage {
     pub width: usize,
     pub height: usize,
-    pub palette: Palette,
+    pub palette: PaletteU3,
     pub pixels: Vec<u8>,
 }
 
@@ -31,7 +31,7 @@ impl From<Image> for IndexedImage {
     }
 }
 
-fn build_palette(tree: BspTree) -> Palette {
+fn build_palette(tree: BspTree) -> PaletteU3 {
     tree.leaves
         .iter()
         .map(Distribution::average_color)

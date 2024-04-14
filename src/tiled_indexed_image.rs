@@ -4,7 +4,7 @@ use crate::{
     bsp::BspTree,
     color::{ColorU3, ColorU8},
     distribution::Distribution,
-    palette::Palette,
+    palette::PaletteU3,
     remap::{nearest_color_in_palette, remap},
     tiled_image::{Tile, TiledImage, TILE_SIZE},
 };
@@ -12,7 +12,7 @@ use crate::{
 pub struct TiledIndexedImage {
     pub width_in_tiles: usize,
     pub height_in_tiles: usize,
-    pub palettes: Vec<Palette>,
+    pub palettes: Vec<PaletteU3>,
     pub tiles: Vec<IndexedTile>,
 }
 
