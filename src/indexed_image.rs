@@ -3,7 +3,7 @@ use crate::{
     color::{ColorU3, ColorU8},
     distribution::Distribution,
     image::Image,
-    palette::PaletteU3,
+    palette::{PaletteU3, PaletteU8},
     remap::remap,
 };
 
@@ -19,7 +19,7 @@ impl From<Image> for IndexedImage {
         let distribution = Distribution::new(&input_image.pixels);
         let tree = BspTree::new(distribution);
         let palette = build_palette(tree);
-        let palette_u8: Vec<ColorU8> = palette.iter().copied().map(ColorU8::from).collect();
+        let palette_u8: PaletteU8 = palette.iter().copied().map(ColorU8::from).collect();
         let pixels = remap(&input_image.pixels, &palette_u8);
 
         IndexedImage {

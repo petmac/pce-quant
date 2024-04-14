@@ -4,7 +4,7 @@ use crate::{
     bsp::BspTree,
     color::{ColorU3, ColorU8},
     distribution::Distribution,
-    palette::PaletteU3,
+    palette::{PaletteU3, PaletteU8},
     remap::{nearest_color_in_palette, remap},
     tiled_image::{Tile, TiledImage, TILE_SIZE},
 };
@@ -37,7 +37,7 @@ impl From<TiledImage> for TiledIndexedImage {
                     .collect()
             })
             .collect();
-        let palettes_u8: Vec<Vec<ColorU8>> = palette_tiles
+        let palettes_u8: Vec<PaletteU8> = palette_tiles
             .iter()
             .map(|tiles| tiles_color_distribution(tiles))
             .map(BspTree::new)
@@ -85,7 +85,7 @@ fn tile_color_distribution(tile: &Tile) -> Distribution {
     Distribution::new(&colors)
 }
 
-fn build_palette(tree: BspTree) -> Vec<ColorU8> {
+fn build_palette(tree: BspTree) -> PaletteU8 {
     tree.leaves
         .iter()
         .map(Distribution::average_color)
@@ -129,7 +129,7 @@ fn remap_tile(ideal_tile: &Tile, palette: &[ColorU8]) -> IndexedPattern {
 
 impl From<TiledIndexedImage> for TiledImage {
     fn from(source_image: TiledIndexedImage) -> Self {
-        let palettes: Vec<Vec<ColorU8>> = source_image
+        let palettes: Vec<PaletteU8> = source_image
             .palettes
             .iter()
             .map(|palette| palette.iter().copied().map(ColorU8::from).collect())
