@@ -151,12 +151,18 @@ impl From<TiledIndexedImage> for TiledImage {
     }
 }
 
+const DEBUG_TILE_PALETTES: bool = true;
+
 fn tile_from_pattern_and_palette(pattern: &IndexedPattern, palette: &[ColorU8]) -> Tile {
     let mut tile = [[ColorU8 { r: 0, g: 0, b: 0 }; TILE_SIZE]; TILE_SIZE];
 
     for y in 0..TILE_SIZE {
         for x in 0..TILE_SIZE {
-            let color_index = pattern[y][x] as usize;
+            let color_index = if DEBUG_TILE_PALETTES {
+                ((y / 2) * 4) + (x / 2)
+            } else {
+                pattern[y][x] as usize
+            };
             let color = palette[color_index];
             tile[y][x] = color;
         }
