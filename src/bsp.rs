@@ -32,7 +32,6 @@ impl BspTree {
                     leaves.push(less);
 
                     if leaves.len() >= MAX_COLORS {
-                        println!("Stopping because we've got enough leaves");
                         break;
                     }
                 }

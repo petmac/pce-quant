@@ -55,7 +55,7 @@ fn u3_to_u8(x: u8) -> u8 {
     (x << 5) | (x << 2) | (x >> 1)
 }
 
-#[derive()]
+#[derive(Clone, Copy)]
 pub struct ColorF {
     pub r: f64,
     pub g: f64,
@@ -64,9 +64,15 @@ pub struct ColorF {
 
 impl From<ColorF> for ColorU3 {
     fn from(value: ColorF) -> ColorU3 {
-        let r = value.r.round() as u8 >> 5;
-        let g = value.g.round() as u8 >> 5;
-        let b = value.b.round() as u8 >> 5;
-        ColorU3 { r, g, b }
+        ColorU3::from(ColorU8::from(value))
+    }
+}
+
+impl From<ColorF> for ColorU8 {
+    fn from(value: ColorF) -> ColorU8 {
+        let r = value.r.round() as u8;
+        let g = value.g.round() as u8;
+        let b = value.b.round() as u8;
+        ColorU8 { r, g, b }
     }
 }
