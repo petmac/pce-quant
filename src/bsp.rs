@@ -5,14 +5,12 @@ use crate::{
     distribution::Distribution,
 };
 
-const MAX_COLORS: usize = 16;
-
 pub struct BspTree {
     pub leaves: Vec<Distribution>,
 }
 
 impl BspTree {
-    pub fn new(distribution: Distribution) -> BspTree {
+    pub fn new(distribution: Distribution, max_leaves: usize) -> BspTree {
         let mut leaves = vec![distribution];
 
         loop {
@@ -31,7 +29,7 @@ impl BspTree {
                     *leaf = greater_equal;
                     leaves.push(less);
 
-                    if leaves.len() >= MAX_COLORS {
+                    if leaves.len() >= max_leaves {
                         break;
                     }
                 }

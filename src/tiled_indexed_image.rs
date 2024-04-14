@@ -4,10 +4,12 @@ use crate::{
     bsp::BspTree,
     color::{ColorU3, ColorU8},
     distribution::Distribution,
-    palette::{PaletteU3, PaletteU8},
+    palette::{PaletteU3, PaletteU8, MAX_PALETTE_COLORS},
     remap::{nearest_color_in_palette, remap},
     tiled_image::{Tile, TiledImage, TILE_SIZE},
 };
+
+const MAX_PALETTES: usize = 16;
 
 pub struct TiledIndexedImage {
     pub width_in_tiles: usize,
@@ -40,7 +42,7 @@ impl From<TiledImage> for TiledIndexedImage {
         let palettes_u8: Vec<PaletteU8> = palette_tiles
             .iter()
             .map(|tiles| tiles_color_distribution(tiles))
-            .map(BspTree::new)
+            .map(|distribution| BspTree::new(distribution, MAX_PALETTE_COLORS))
             .map(build_palette)
             .collect();
         let tiles = zip(tile_palette_indices, &source_image.tiles)
@@ -74,7 +76,7 @@ fn tile_palette_indices(tiles: &[Tile]) -> Vec<u8> {
         .map(ColorU8::from)
         .collect();
     let distribution = Distribution::new(&tile_average_colors);
-    let tree = BspTree::new(distribution);
+    let tree = BspTree::new(distribution, MAX_PALETTES);
     let palette = build_palette(tree);
     let tile_palette_indices = remap(&tile_average_colors, &palette);
     tile_palette_indices
