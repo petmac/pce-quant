@@ -13,13 +13,11 @@ impl From<Image> for TiledImage {
         let width_in_tiles = source_image.width / TILE_SIZE;
         let height_in_tiles = source_image.height / TILE_SIZE;
         let mut tiles = vec![
-            Tile {
-                pixels: [[ColorU8 {
-                    r: 255,
-                    g: 0,
-                    b: 255
-                }; TILE_SIZE]; TILE_SIZE],
-            };
+            [[ColorU8 {
+                r: 255,
+                g: 0,
+                b: 255
+            }; TILE_SIZE]; TILE_SIZE];
             width_in_tiles * height_in_tiles
         ];
 
@@ -38,7 +36,7 @@ impl From<Image> for TiledImage {
                 let x_px_in_tile = x_px % TILE_SIZE;
                 let dest_tile = &mut dest_row_tiles[x_tiles];
 
-                dest_tile.pixels[y_px_in_tile][x_px_in_tile] = source_row_px[x_px];
+                dest_tile[y_px_in_tile][x_px_in_tile] = source_row_px[x_px];
             }
         }
 
@@ -78,7 +76,7 @@ impl From<TiledImage> for Image {
                 let x_px_in_tile = x_px % TILE_SIZE;
                 let source_tile = &source_row_tiles[x_tiles];
 
-                dest_row_px[x_px] = source_tile.pixels[y_px_in_tile][x_px_in_tile];
+                dest_row_px[x_px] = source_tile[y_px_in_tile][x_px_in_tile];
             }
         }
 
@@ -90,7 +88,4 @@ impl From<TiledImage> for Image {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
-pub struct Tile {
-    pub pixels: [[ColorU8; TILE_SIZE]; TILE_SIZE],
-}
+pub type Tile = [[ColorU8; TILE_SIZE]; TILE_SIZE];

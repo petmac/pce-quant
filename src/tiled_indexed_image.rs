@@ -81,7 +81,7 @@ fn tile_palette_indices(tiles: &[Tile]) -> Vec<u8> {
 }
 
 fn tile_color_distribution(tile: &Tile) -> Distribution {
-    let colors: Vec<ColorU8> = tile.pixels.iter().flatten().copied().collect();
+    let colors: Vec<ColorU8> = tile.iter().flatten().copied().collect();
     Distribution::new(&colors)
 }
 
@@ -108,7 +108,7 @@ fn palette_tile_indices(tile_palette_indices: &[u8]) -> Vec<Vec<usize>> {
 fn tiles_color_distribution(tiles: &[&Tile]) -> Distribution {
     let colors: Vec<ColorU8> = tiles
         .iter()
-        .map(|&tile| tile.pixels.iter().flatten())
+        .map(|&tile| tile.iter().flatten())
         .flatten()
         .copied()
         .collect();
@@ -120,7 +120,7 @@ fn remap_tile(ideal_tile: &Tile, palette: &[ColorU8]) -> IndexedPattern {
 
     for y in 0..TILE_SIZE {
         for x in 0..TILE_SIZE {
-            pattern[y][x] = nearest_color_in_palette(&ideal_tile.pixels[y][x], palette) as u8;
+            pattern[y][x] = nearest_color_in_palette(&ideal_tile[y][x], palette) as u8;
         }
     }
 
@@ -150,15 +150,13 @@ impl From<TiledIndexedImage> for TiledImage {
 }
 
 fn tile_from_pattern_and_palette(pattern: &IndexedPattern, palette: &[ColorU8]) -> Tile {
-    let mut tile = Tile {
-        pixels: [[ColorU8 { r: 0, g: 0, b: 0 }; TILE_SIZE]; TILE_SIZE],
-    };
+    let mut tile = [[ColorU8 { r: 0, g: 0, b: 0 }; TILE_SIZE]; TILE_SIZE];
 
     for y in 0..TILE_SIZE {
         for x in 0..TILE_SIZE {
             let color_index = pattern[y][x] as usize;
             let color = palette[color_index];
-            tile.pixels[y][x] = color;
+            tile[y][x] = color;
         }
     }
 
