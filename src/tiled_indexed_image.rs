@@ -1,11 +1,13 @@
 use std::iter::zip;
 
+use clustering::kmeans;
+
 use crate::{
     bsp::BspTree,
     color::{ColorU3, ColorU8},
     color_distribution::ColorDistribution,
     palette::{PaletteU3, PaletteU8, MAX_PALETTE_COLORS},
-    remap::{nearest_color_in_palette, remap},
+    remap::nearest_color_in_palette,
     tiled_image::{Tile, TiledImage, TILE_SIZE},
 };
 
@@ -47,10 +49,10 @@ impl From<TiledImage> for TiledIndexedImage {
             .collect();
         let tiles = zip(tile_palette_indices, &source_image.tiles)
             .map(|(palette_index, tile)| {
-                let palette = &palettes_u8[palette_index as usize];
+                let palette = &palettes_u8[palette_index];
                 let pattern = remap_tile(&tile, palette);
                 IndexedTile {
-                    palette_index,
+                    palette_index: palette_index as u8,
                     pattern,
                 }
             })
@@ -68,18 +70,11 @@ impl From<TiledImage> for TiledIndexedImage {
     }
 }
 
-fn tile_palette_indices(tiles: &[Tile]) -> Vec<u8> {
-    let tile_average_colors: Vec<ColorU8> = tiles
-        .iter()
-        .map(tile_color_distribution)
-        .map(|distribution| distribution.average_color())
-        .map(ColorU8::from)
-        .collect();
-    let distribution = ColorDistribution::new(&tile_average_colors);
-    let tree = BspTree::new(distribution, MAX_PALETTES);
-    let palette = build_palette(tree);
-    let tile_palette_indices = remap(&tile_average_colors, &palette);
-    tile_palette_indices
+fn tile_palette_indices(tiles: &[Tile]) -> Vec<usize> {
+    let tile_color_distributions: Vec<ColorDistribution> =
+        tiles.iter().map(tile_color_distribution).collect();
+    let tile_clustering = kmeans(MAX_PALETTES, &tile_color_distributions, 100);
+    tile_clustering.membership
 }
 
 fn tile_color_distribution(tile: &Tile) -> ColorDistribution {
@@ -95,9 +90,9 @@ fn build_palette(tree: BspTree) -> PaletteU8 {
         .collect()
 }
 
-fn palette_tile_indices(tile_palette_indices: &[u8]) -> Vec<Vec<usize>> {
+fn palette_tile_indices(tile_palette_indices: &[usize]) -> Vec<Vec<usize>> {
     let max_palette_index = tile_palette_indices.iter().copied().max();
-    let palette_count = max_palette_index.unwrap_or(0) as usize + 1;
+    let palette_count = max_palette_index.unwrap_or(0) + 1;
     let mut palette_tile_indices = vec![Vec::new(); palette_count];
 
     for (tile_index, &tile_palette_index) in tile_palette_indices.iter().enumerate() {

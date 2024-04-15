@@ -1,5 +1,7 @@
 use std::collections::BTreeMap;
 
+use clustering::Elem;
+
 use crate::color::{ColorF, ColorU8};
 
 pub struct ColorDistribution {
@@ -78,4 +80,37 @@ impl ColorDistribution {
             },
         )
     }
+}
+
+impl Elem for ColorDistribution {
+    fn dimensions(&self) -> usize {
+        3
+    }
+
+    fn at(&self, i: usize) -> f64 {
+        let channel_selector = match i {
+            0 => red,
+            1 => green,
+            _ => blue,
+        };
+
+        let pixel_counts_for_dimension: usize = self
+            .color_pixel_counts
+            .iter()
+            .map(|(color, &pixel_count)| channel_selector(color) as usize * pixel_count)
+            .sum();
+        pixel_counts_for_dimension as f64
+    }
+}
+
+fn red(color: &ColorU8) -> u8 {
+    color.r
+}
+
+fn green(color: &ColorU8) -> u8 {
+    color.g
+}
+
+fn blue(color: &ColorU8) -> u8 {
+    color.b
 }
