@@ -3,11 +3,10 @@ use std::iter::zip;
 use clustering::kmeans;
 
 use crate::{
-    bsp::BspTree,
     color::{ColorU3, ColorU8},
     color_distribution::ColorDistribution,
     palette::{PaletteU3, PaletteU8, MAX_PALETTE_COLORS},
-    remap::nearest_color_in_palette,
+    remap::remap_tile,
     tiled_image::{Tile, TiledImage, TILE_SIZE},
 };
 
@@ -43,9 +42,7 @@ impl From<TiledImage> for TiledIndexedImage {
             .collect();
         let palettes_u8: Vec<PaletteU8> = palette_tiles
             .iter()
-            .map(|tiles| tiles_color_distribution(tiles))
-            .map(|distribution| BspTree::new(distribution, MAX_PALETTE_COLORS))
-            .map(build_palette)
+            .map(|tiles| tiles_palette(tiles))
             .collect();
         let tiles = zip(tile_palette_indices, &source_image.tiles)
             .map(|(palette_index, tile)| {
@@ -82,12 +79,22 @@ fn tile_color_distribution(tile: &Tile) -> ColorDistribution {
     ColorDistribution::new(&colors)
 }
 
-fn build_palette(tree: BspTree) -> PaletteU8 {
-    tree.leaves
+fn tiles_palette(tiles: &[&Tile]) -> PaletteU8 {
+    let colors: Vec<ColorU8> = tiles.iter().flat_map(|&tile| tile_colors(tile)).collect();
+    let color_clustering = kmeans(MAX_PALETTE_COLORS, &colors, 100);
+    color_clustering
+        .centroids
         .iter()
-        .map(ColorDistribution::average_color)
-        .map(ColorU8::from)
+        .map(|centroid| ColorU8 {
+            r: centroid.0[0] as u8,
+            g: centroid.0[1] as u8,
+            b: centroid.0[2] as u8,
+        })
         .collect()
+}
+
+fn tile_colors(tile: &Tile) -> Vec<ColorU8> {
+    tile.iter().flatten().copied().collect()
 }
 
 fn palette_tile_indices(tile_palette_indices: &[usize]) -> Vec<Vec<usize>> {
@@ -100,28 +107,6 @@ fn palette_tile_indices(tile_palette_indices: &[usize]) -> Vec<Vec<usize>> {
     }
 
     palette_tile_indices
-}
-
-fn tiles_color_distribution(tiles: &[&Tile]) -> ColorDistribution {
-    let colors: Vec<ColorU8> = tiles
-        .iter()
-        .map(|&tile| tile.iter().flatten())
-        .flatten()
-        .copied()
-        .collect();
-    ColorDistribution::new(&colors)
-}
-
-fn remap_tile(ideal_tile: &Tile, palette: &[ColorU8]) -> IndexedPattern {
-    let mut pattern = IndexedPattern::default();
-
-    for y in 0..TILE_SIZE {
-        for x in 0..TILE_SIZE {
-            pattern[y][x] = nearest_color_in_palette(&ideal_tile[y][x], palette) as u8;
-        }
-    }
-
-    pattern
 }
 
 impl From<TiledIndexedImage> for TiledImage {

@@ -1,3 +1,5 @@
+use clustering::Elem;
+
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct ColorU8 {
     pub r: u8,
@@ -21,6 +23,20 @@ impl From<ColorU8> for ColorU3 {
             r: value.r >> 5,
             g: value.g >> 5,
             b: value.b >> 5,
+        }
+    }
+}
+
+impl Elem for ColorU8 {
+    fn dimensions(&self) -> usize {
+        3
+    }
+
+    fn at(&self, i: usize) -> f64 {
+        match i {
+            0 => self.r as f64,
+            1 => self.g as f64,
+            _ => self.b as f64,
         }
     }
 }

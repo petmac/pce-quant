@@ -1,4 +1,8 @@
-use crate::color::ColorU8;
+use crate::{
+    color::ColorU8,
+    tiled_image::{Tile, TILE_SIZE},
+    tiled_indexed_image::IndexedPattern,
+};
 
 pub fn remap(pixels: &[ColorU8], palette: &[ColorU8]) -> Vec<u8> {
     pixels
@@ -7,7 +11,19 @@ pub fn remap(pixels: &[ColorU8], palette: &[ColorU8]) -> Vec<u8> {
         .collect()
 }
 
-pub fn nearest_color_in_palette(ideal_color: &ColorU8, palette: &[ColorU8]) -> usize {
+pub fn remap_tile(ideal_tile: &Tile, palette: &[ColorU8]) -> IndexedPattern {
+    let mut pattern = IndexedPattern::default();
+
+    for y in 0..TILE_SIZE {
+        for x in 0..TILE_SIZE {
+            pattern[y][x] = nearest_color_in_palette(&ideal_tile[y][x], palette) as u8;
+        }
+    }
+
+    pattern
+}
+
+fn nearest_color_in_palette(ideal_color: &ColorU8, palette: &[ColorU8]) -> usize {
     let nearest = palette
         .iter()
         .enumerate()
