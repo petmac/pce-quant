@@ -78,19 +78,40 @@ fn tile_color_distribution(tile: &Tile) -> ColorDistribution {
 fn tiles_palette(tiles: &[&Tile]) -> Palette {
     let colors: Vec<Color> = tiles.iter().flat_map(|&tile| tile_colors(tile)).collect();
     let color_clustering = kmeans(MAX_PALETTE_COLORS, &colors, 100);
-    color_clustering
-        .centroids
+    let mut cluster_colors: Vec<Vec<Color>> = vec![Vec::new(); MAX_PALETTE_COLORS];
+
+    for (element_index, &cluster_index) in color_clustering.membership.iter().enumerate() {
+        cluster_colors[cluster_index].push(color_clustering.elements[element_index]);
+    }
+
+    let palette = cluster_colors
         .iter()
-        .map(|centroid| Color {
-            r: centroid.0[0],
-            g: centroid.0[1],
-            b: centroid.0[2],
-        })
-        .collect()
+        .map(|colors| average_color(colors))
+        .collect();
+
+    palette
 }
 
 fn tile_colors(tile: &Tile) -> Vec<Color> {
     tile.iter().flatten().copied().collect()
+}
+
+fn average_color(colors: &[Color]) -> Color {
+    let r = colors.iter().fold(0.0, |acc, color| acc + color.r);
+    let g = colors.iter().fold(0.0, |acc, color| acc + color.g);
+    let b = colors.iter().fold(0.0, |acc, color| acc + color.b);
+
+    let scale = if colors.is_empty() {
+        0.0
+    } else {
+        1.0 / colors.len() as f64
+    };
+
+    Color {
+        r: r * scale,
+        g: g * scale,
+        b: b * scale,
+    }
 }
 
 fn palette_tile_indices(tile_palette_indices: &[usize]) -> Vec<Vec<usize>> {
