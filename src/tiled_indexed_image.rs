@@ -146,7 +146,7 @@ impl From<TiledIndexedImage> for TiledImage {
     }
 }
 
-const DEBUG_TILE_PALETTES: bool = true;
+const DEBUG_TILE_PALETTES: bool = false;
 
 fn tile_from_pattern_and_palette(pattern: &IndexedPattern, palette: &[ColorU8]) -> Tile {
     let mut tile = [[ColorU8 { r: 0, g: 0, b: 0 }; TILE_SIZE]; TILE_SIZE];
