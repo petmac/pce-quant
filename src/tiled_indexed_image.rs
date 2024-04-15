@@ -3,9 +3,9 @@ use std::iter::zip;
 use clustering::kmeans;
 
 use crate::{
-    color::{ColorU3, ColorU8},
+    color::Color,
     color_distribution::ColorDistribution,
-    palette::{PaletteU3, PaletteU8, MAX_PALETTE_COLORS},
+    palette::{Palette, MAX_PALETTE_COLORS},
     remap::remap_tile,
     tiled_image::{Tile, TiledImage, TILE_SIZE},
 };
@@ -15,7 +15,7 @@ const MAX_PALETTES: usize = 16;
 pub struct TiledIndexedImage {
     pub width_in_tiles: usize,
     pub height_in_tiles: usize,
-    pub palettes: Vec<PaletteU3>,
+    pub palettes: Vec<Palette>,
     pub tiles: Vec<IndexedTile>,
 }
 
@@ -40,23 +40,19 @@ impl From<TiledImage> for TiledIndexedImage {
                     .collect()
             })
             .collect();
-        let palettes_u8: Vec<PaletteU8> = palette_tiles
+        let palettes: Vec<Palette> = palette_tiles
             .iter()
             .map(|tiles| tiles_palette(tiles))
             .collect();
         let tiles = zip(tile_palette_indices, &source_image.tiles)
             .map(|(palette_index, tile)| {
-                let palette = &palettes_u8[palette_index];
+                let palette = &palettes[palette_index];
                 let pattern = remap_tile(&tile, palette);
                 IndexedTile {
                     palette_index: palette_index as u8,
                     pattern,
                 }
             })
-            .collect();
-        let palettes = palettes_u8
-            .iter()
-            .map(|palette| palette.iter().copied().map(ColorU3::from).collect())
             .collect();
         TiledIndexedImage {
             width_in_tiles: source_image.width_in_tiles,
@@ -75,25 +71,25 @@ fn tile_palette_indices(tiles: &[Tile]) -> Vec<usize> {
 }
 
 fn tile_color_distribution(tile: &Tile) -> ColorDistribution {
-    let colors: Vec<ColorU8> = tile.iter().flatten().copied().collect();
+    let colors: Vec<Color> = tile.iter().flatten().copied().collect();
     ColorDistribution::new(&colors)
 }
 
-fn tiles_palette(tiles: &[&Tile]) -> PaletteU8 {
-    let colors: Vec<ColorU8> = tiles.iter().flat_map(|&tile| tile_colors(tile)).collect();
+fn tiles_palette(tiles: &[&Tile]) -> Palette {
+    let colors: Vec<Color> = tiles.iter().flat_map(|&tile| tile_colors(tile)).collect();
     let color_clustering = kmeans(MAX_PALETTE_COLORS, &colors, 100);
     color_clustering
         .centroids
         .iter()
-        .map(|centroid| ColorU8 {
-            r: centroid.0[0] as u8,
-            g: centroid.0[1] as u8,
-            b: centroid.0[2] as u8,
+        .map(|centroid| Color {
+            r: centroid.0[0],
+            g: centroid.0[1],
+            b: centroid.0[2],
         })
         .collect()
 }
 
-fn tile_colors(tile: &Tile) -> Vec<ColorU8> {
+fn tile_colors(tile: &Tile) -> Vec<Color> {
     tile.iter().flatten().copied().collect()
 }
 
@@ -111,16 +107,14 @@ fn palette_tile_indices(tile_palette_indices: &[usize]) -> Vec<Vec<usize>> {
 
 impl From<TiledIndexedImage> for TiledImage {
     fn from(source_image: TiledIndexedImage) -> Self {
-        let palettes: Vec<PaletteU8> = source_image
-            .palettes
-            .iter()
-            .map(|palette| palette.iter().copied().map(ColorU8::from).collect())
-            .collect();
         let tiles = source_image
             .tiles
             .iter()
             .map(|tile| {
-                tile_from_pattern_and_palette(&tile.pattern, &palettes[tile.palette_index as usize])
+                tile_from_pattern_and_palette(
+                    &tile.pattern,
+                    &source_image.palettes[tile.palette_index as usize],
+                )
             })
             .collect();
         TiledImage {
@@ -133,8 +127,12 @@ impl From<TiledIndexedImage> for TiledImage {
 
 const DEBUG_TILE_PALETTES: bool = false;
 
-fn tile_from_pattern_and_palette(pattern: &IndexedPattern, palette: &[ColorU8]) -> Tile {
-    let mut tile = [[ColorU8 { r: 0, g: 0, b: 0 }; TILE_SIZE]; TILE_SIZE];
+fn tile_from_pattern_and_palette(pattern: &IndexedPattern, palette: &[Color]) -> Tile {
+    let mut tile = [[Color {
+        r: 1.0,
+        g: 0.0,
+        b: 1.0,
+    }; TILE_SIZE]; TILE_SIZE];
 
     for y in 0..TILE_SIZE {
         for x in 0..TILE_SIZE {

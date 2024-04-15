@@ -2,12 +2,12 @@ use std::{error::Error, fs::File, io::BufWriter, path::PathBuf};
 
 use png::{BitDepth, ColorType, Decoder, Encoder, Transformations};
 
-use crate::color::ColorU8;
+use crate::color::Color;
 
 pub struct Image {
     pub width: usize,
     pub height: usize,
-    pub pixels: Vec<ColorU8>,
+    pub pixels: Vec<Color>,
 }
 
 impl Image {
@@ -17,7 +17,14 @@ impl Image {
         let mut reader = decoder.read_info()?;
         let mut buf = vec![0; reader.output_buffer_size()];
         let info = reader.next_frame(&mut buf)?;
-        let pixels = buf.chunks_exact(3).map(ColorU8::new).collect();
+        let pixels = buf
+            .chunks_exact(3)
+            .map(|bytes| Color {
+                r: bytes[0] as f64 / 255.0,
+                g: bytes[1] as f64 / 255.0,
+                b: bytes[2] as f64 / 255.0,
+            })
+            .collect();
 
         Ok(Image {
             width: info.width as usize,
@@ -37,7 +44,13 @@ impl Image {
         let data: Vec<u8> = self
             .pixels
             .iter()
-            .flat_map(|color| [color.r, color.g, color.b])
+            .flat_map(|color| {
+                [
+                    (color.r * 255.0).round() as u8,
+                    (color.g * 255.0).round() as u8,
+                    (color.b * 255.0).round() as u8,
+                ]
+            })
             .collect();
         writer.write_image_data(&data)?;
 

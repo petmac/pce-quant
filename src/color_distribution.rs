@@ -1,32 +1,39 @@
 use clustering::Elem;
 
-use crate::color::ColorU8;
+use crate::color::Color;
 
 pub struct ColorDistribution {
-    min: ColorU8,
-    max: ColorU8,
+    min: Color,
+    max: Color,
 }
 
 impl ColorDistribution {
-    pub fn new(pixels: &[ColorU8]) -> ColorDistribution {
-        let min_r = pixels.iter().map(red).min().unwrap_or_default();
-        let min_g = pixels.iter().map(green).min().unwrap_or_default();
-        let min_b = pixels.iter().map(blue).min().unwrap_or_default();
-        let max_r = pixels.iter().map(red).max().unwrap_or_default();
-        let max_g = pixels.iter().map(green).max().unwrap_or_default();
-        let max_b = pixels.iter().map(blue).max().unwrap_or_default();
-        ColorDistribution {
-            min: ColorU8 {
-                r: min_r,
-                g: min_g,
-                b: min_b,
-            },
-            max: ColorU8 {
-                r: max_r,
-                g: max_g,
-                b: max_b,
-            },
+    pub fn new(pixels: &[Color]) -> ColorDistribution {
+        let mut min = pixels[0];
+        let mut max = min;
+
+        for color in pixels {
+            if color.r < min.r {
+                min.r = color.r;
+            }
+            if color.g < min.g {
+                min.g = color.g;
+            }
+            if color.b < min.b {
+                min.b = color.b;
+            }
+            if color.r > max.r {
+                max.r = color.r;
+            }
+            if color.g > max.g {
+                max.g = color.g;
+            }
+            if color.b > max.b {
+                max.b = color.b;
+            }
         }
+
+        ColorDistribution { min, max }
     }
 }
 
@@ -46,16 +53,4 @@ impl Elem for ColorDistribution {
         };
         component as f64
     }
-}
-
-fn red(color: &ColorU8) -> u8 {
-    color.r
-}
-
-fn green(color: &ColorU8) -> u8 {
-    color.g
-}
-
-fn blue(color: &ColorU8) -> u8 {
-    color.b
 }

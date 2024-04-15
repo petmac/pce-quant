@@ -1,4 +1,4 @@
-use crate::{color::ColorU8, image::Image};
+use crate::{color::Color, image::Image};
 
 pub const TILE_SIZE: usize = 8;
 
@@ -13,10 +13,10 @@ impl From<Image> for TiledImage {
         let width_in_tiles = source_image.width / TILE_SIZE;
         let height_in_tiles = source_image.height / TILE_SIZE;
         let mut tiles = vec![
-            [[ColorU8 {
-                r: 255,
-                g: 0,
-                b: 255
+            [[Color {
+                r: 1.0,
+                g: 0.0,
+                b: 1.0
             }; TILE_SIZE]; TILE_SIZE];
             width_in_tiles * height_in_tiles
         ];
@@ -53,10 +53,10 @@ impl From<TiledImage> for Image {
         let width = source_image.width_in_tiles * TILE_SIZE;
         let height = source_image.height_in_tiles * TILE_SIZE;
         let mut pixels = vec![
-            ColorU8 {
-                r: 255,
-                g: 0,
-                b: 255
+            Color {
+                r: 1.0,
+                g: 0.0,
+                b: 1.0
             };
             width * height
         ];
@@ -88,4 +88,4 @@ impl From<TiledImage> for Image {
     }
 }
 
-pub type Tile = [[ColorU8; TILE_SIZE]; TILE_SIZE];
+pub type Tile = [[Color; TILE_SIZE]; TILE_SIZE];
