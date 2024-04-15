@@ -7,6 +7,16 @@ pub struct Color {
     pub b: f64,
 }
 
+impl Color {
+    pub fn truncate_to_3_bits(self) -> Color {
+        Color {
+            r: truncate_to_3_bits(self.r),
+            g: truncate_to_3_bits(self.g),
+            b: truncate_to_3_bits(self.b),
+        }
+    }
+}
+
 impl Elem for Color {
     fn dimensions(&self) -> usize {
         3
@@ -19,4 +29,8 @@ impl Elem for Color {
             _ => self.b,
         }
     }
+}
+
+fn truncate_to_3_bits(x: f64) -> f64 {
+    (x * 7.0).round() / 7.0
 }

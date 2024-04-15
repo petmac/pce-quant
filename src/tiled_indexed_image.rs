@@ -87,6 +87,7 @@ fn tiles_palette(tiles: &[&Tile]) -> Palette {
     let palette = cluster_colors
         .iter()
         .map(|colors| average_color(colors))
+        .map(Color::truncate_to_3_bits)
         .collect();
 
     palette
