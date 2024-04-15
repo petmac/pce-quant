@@ -1,8 +1,6 @@
-mod bsp;
 mod color;
 mod color_distribution;
 mod image;
-mod indexed_image;
 mod palette;
 mod remap;
 mod tiled_image;

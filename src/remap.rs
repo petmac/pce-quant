@@ -4,13 +4,6 @@ use crate::{
     tiled_indexed_image::IndexedPattern,
 };
 
-pub fn remap(pixels: &[ColorU8], palette: &[ColorU8]) -> Vec<u8> {
-    pixels
-        .iter()
-        .map(|col| nearest_color_in_palette(col, palette) as u8)
-        .collect()
-}
-
 pub fn remap_tile(ideal_tile: &Tile, palette: &[ColorU8]) -> IndexedPattern {
     let mut pattern = IndexedPattern::default();
 
