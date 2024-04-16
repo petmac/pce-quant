@@ -26,7 +26,7 @@ pub fn remap_tile(ideal_tile: &Tile, palette: &[Color]) -> IndexedPattern {
 }
 
 fn remap_pixel(ideal_color: &Color, palette: &[Color], error: &mut [f64; 3]) -> u8 {
-    const ERROR_CORRECTION: f64 = 0.25;
+    const ERROR_CORRECTION: f64 = 0.5;
 
     let target_color = Color {
         r: ideal_color.r - error[0] * ERROR_CORRECTION,
