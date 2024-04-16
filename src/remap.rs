@@ -6,9 +6,10 @@ use crate::{
 
 pub fn remap_tile(ideal_tile: &Tile, palette: &[Color]) -> IndexedPattern {
     let mut pattern = IndexedPattern::default();
-    let mut error = [0.0; 3];
 
     for y in 0..TILE_SIZE {
+        let mut error = [0.0; 3];
+
         for x in 0..TILE_SIZE {
             let ideal_color = &ideal_tile[y][x];
             let target_color = Color {
