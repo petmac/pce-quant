@@ -1,0 +1,3 @@
+[submodule "external/huc"]
+	path = external/huc
+	url = https://github.com/pce-devel/huc.git
