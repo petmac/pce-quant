@@ -5,11 +5,31 @@
       "type": "cargo",
       "command": "build",
       "problemMatcher": ["$rustc"],
+      "label": "rust: cargo build",
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "type": "shell",
+      "command": "make",
+      "args": ["all"],
+      "problemMatcher": [],
       "group": {
         "kind": "build",
         "isDefault": true
       },
-      "label": "rust: cargo build",
+      "label": "make: all",
+      "presentation": {
+        "clear": true
+      }
+    },
+    {
+      "type": "shell",
+      "command": "make",
+      "args": ["clean"],
+      "problemMatcher": [],
+      "label": "make: clean",
       "presentation": {
         "clear": true
       }
