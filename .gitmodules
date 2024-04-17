@@ -1,3 +1,6 @@
 [submodule "external/huc"]
 	path = external/huc
 	url = https://github.com/pce-devel/huc.git
+[submodule "external/Mesen2"]
+	path = external/Mesen2
+	url = https://github.com/SourMesen/Mesen2.git
