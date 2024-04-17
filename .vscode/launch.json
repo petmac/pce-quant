@@ -15,7 +15,7 @@
           "kind": "bin"
         }
       },
-      "args": ["images/320x256/ff7_1.png", "images/output.png"],
+      "args": ["images/320x256/ff7_1.png", "png", "images/output.png"],
       "cwd": "${workspaceFolder}"
     },
     {

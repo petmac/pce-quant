@@ -25,7 +25,7 @@ clean:
 	$(MAKE) --directory $(MESEN_DIR) clean
 
 $(OUTPUT_PNG): images/320x256/ff7_1.png $(PCE_QUANT)
-	$(PCE_QUANT) $< $@
+	$(PCE_QUANT) $< png $@
 
 $(PCE_QUANT): cargo-build
 
