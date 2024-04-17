@@ -1,3 +1,5 @@
+PCE_QUANT := target/release/pce-quant
+
 HUC_DIR := external/huc
 HUC := $(HUC_DIR)/bin/huc
 
@@ -11,13 +13,20 @@ MESEN_DIR := external/Mesen2
 MESEN := $(MESEN_DIR)/bin/$(MESEN_PLATFORM)/Release/$(MESEN_PLATFORM)/publish/Mesen
 
 .PHONY: all
-all: $(HUC) $(MESEN)
+all: $(PCE_QUANT) $(HUC) $(MESEN)
 	$(MESEN) $(shell pwd)/$(HUC_DIR)/examples/huc/overlay/overlay.cue
 
 .PHONY: clean
 clean:
+	cargo clean
 	$(MAKE) --directory $(HUC_DIR) clean
 	$(MAKE) --directory $(MESEN_DIR) clean
+
+$(PCE_QUANT): cargo-build
+
+.PHONY: cargo-build
+cargo-build:
+	cargo build --release
 
 $(HUC):
 	$(MAKE) --directory $(HUC_DIR)
