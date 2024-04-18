@@ -3,6 +3,7 @@
     "tamasfe.even-better-toml",
     "esbenp.prettier-vscode",
     "rust-lang.rust-analyzer",
-    "vadimcn.vscode-lldb"
+    "vadimcn.vscode-lldb",
+    "xaver.clang-format"
   ]
 }
