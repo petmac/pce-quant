@@ -11,7 +11,7 @@
 /target/
 /Cargo.lock
 
-# Example
+# HuC
 /example/example.lst
 /example/example.ovl
 /example/example.s
