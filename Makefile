@@ -28,9 +28,11 @@ clean:
 	$(MAKE) --directory $(HUC_DIR) clean
 	$(MAKE) --directory $(MESEN_DIR) clean
 
-$(EXAMPLE_ISO): example/example.ovl $(ISOLINK)
+EXAMPLE_OVERLAYS := example/example.ovl external/huc/examples/huc/overlay/data.bin
+
+$(EXAMPLE_ISO): $(EXAMPLE_OVERLAYS) $(ISOLINK)
 	mkdir -p $(dir $@)
-	$(ISOLINK) $@ example/example.ovl
+	$(ISOLINK) $@ $(EXAMPLE_OVERLAYS)
 
 export PCE_INCLUDE := $(HUC_DIR)/include/huc
 export PCE_PCEAS := $(HUC_DIR)/bin/pceas
