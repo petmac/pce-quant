@@ -11,5 +11,12 @@
 /target/
 /Cargo.lock
 
+# Example
+/example/example.lst
+/example/example.ovl
+/example/example.s
+/example/example.sym
+
 # Output
 /images/output.png
+/temp/

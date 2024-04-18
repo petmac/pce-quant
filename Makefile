@@ -1,9 +1,11 @@
 PCE_QUANT := target/release/pce-quant
 
 OUTPUT_PNG := images/output.png
+EXAMPLE_ISO := temp/example.iso
 
 HUC_DIR := external/huc
 HUC := $(HUC_DIR)/bin/huc
+ISOLINK := $(HUC_DIR)/bin/isolink
 
 MACHINE := $(shell uname -m)
 ifeq ($(filter arm%,$(MACHINE)),)
@@ -15,14 +17,26 @@ MESEN_DIR := external/Mesen2
 MESEN := $(MESEN_DIR)/bin/$(MESEN_PLATFORM)/Release/$(MESEN_PLATFORM)/publish/Mesen
 
 .PHONY: all
-all: $(OUTPUT_PNG) $(HUC) $(MESEN)
-	$(MESEN) $(shell pwd)/$(HUC_DIR)/examples/huc/overlay/overlay.cue
+all: $(OUTPUT_PNG) $(EXAMPLE_ISO) $(MESEN)
+	$(MESEN) $(shell pwd)/example/example.cue
 
 .PHONY: clean
 clean:
+	rm -f $(OUTPUT_PNG)
+	rm -rf temp/
 	cargo clean
 	$(MAKE) --directory $(HUC_DIR) clean
 	$(MAKE) --directory $(MESEN_DIR) clean
+
+$(EXAMPLE_ISO): example/example.ovl $(ISOLINK)
+	mkdir -p $(dir $@)
+	$(ISOLINK) $@ example/example.ovl
+
+export PCE_INCLUDE := $(HUC_DIR)/include/huc
+export PCE_PCEAS := $(HUC_DIR)/bin/pceas
+
+example/example.ovl: example/example.c $(HUC)
+	$(HUC) -cd -v -fno-recursive -msmall -over $<
 
 $(OUTPUT_PNG): images/320x256/ff7_1.png $(PCE_QUANT)
 	$(PCE_QUANT) $< png $@
@@ -33,7 +47,7 @@ $(PCE_QUANT): cargo-build
 cargo-build:
 	cargo build --release
 
-$(HUC):
+$(HUC) $(ISOLINK):
 	$(MAKE) --directory $(HUC_DIR)
 
 $(MESEN):
