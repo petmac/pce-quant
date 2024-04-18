@@ -1,7 +1,7 @@
 #include "huc.h"
 
 void main() {
-  set_xres(328);
+  set_xres(320);
   set_color(0, 0);
   set_color(1, 511);
 
