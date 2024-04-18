@@ -5,6 +5,7 @@ mod palette;
 mod remap;
 mod tiled_image;
 mod tiled_indexed_image;
+mod vram;
 
 use std::{error::Error, path::PathBuf};
 
@@ -12,7 +13,7 @@ use clap::{Parser, Subcommand};
 use image::Image;
 use tiled_image::TiledImage;
 
-use crate::tiled_indexed_image::TiledIndexedImage;
+use crate::{tiled_indexed_image::TiledIndexedImage, vram::Vram};
 
 #[derive(Parser)]
 struct Cli {
@@ -25,6 +26,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Png { output_path: PathBuf },
+    Vram { output_path: PathBuf },
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -42,6 +44,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             let output_tiled_image = TiledImage::from(tiled_indexed_image);
             let output_image = Image::from(output_tiled_image);
             output_image.encode(&output_path)?;
+        }
+        Commands::Vram { output_path } => {
+            println!("Output: {}", output_path.display());
+
+            let output_vram = Vram::from(&tiled_indexed_image);
+            output_vram.encode(&output_path)?;
         }
     }
 

@@ -28,7 +28,7 @@ clean:
 	$(MAKE) --directory $(HUC_DIR) clean
 	$(MAKE) --directory $(MESEN_DIR) clean
 
-EXAMPLE_OVERLAYS := example/example.ovl external/huc/examples/huc/overlay/data.bin
+EXAMPLE_OVERLAYS := example/example.ovl temp/example.vram
 
 $(EXAMPLE_ISO): $(EXAMPLE_OVERLAYS) $(ISOLINK)
 	mkdir -p $(dir $@)
@@ -42,6 +42,9 @@ example/example.ovl: example/example.c $(HUC)
 
 $(EXAMPLE_PNG): example/images/320x256/ff7_1.png $(PCE_QUANT)
 	$(PCE_QUANT) $< png $@
+
+temp/example.vram: example/images/320x256/ff7_1.png $(PCE_QUANT)
+	$(PCE_QUANT) $< vram $@
 
 $(PCE_QUANT): cargo-build
 
