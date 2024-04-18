@@ -1,6 +1,6 @@
 PCE_QUANT := target/release/pce-quant
 
-OUTPUT_PNG := images/output.png
+EXAMPLE_PNG := temp/example.png
 EXAMPLE_ISO := temp/example.iso
 
 HUC_DIR := external/huc
@@ -17,12 +17,12 @@ MESEN_DIR := external/Mesen2
 MESEN := $(MESEN_DIR)/bin/$(MESEN_PLATFORM)/Release/$(MESEN_PLATFORM)/publish/Mesen
 
 .PHONY: all
-all: $(OUTPUT_PNG) $(EXAMPLE_ISO) $(MESEN)
+all: $(EXAMPLE_PNG) $(EXAMPLE_ISO) $(MESEN)
 	$(MESEN) $(shell pwd)/example/example.cue
 
 .PHONY: clean
 clean:
-	rm -f $(OUTPUT_PNG)
+	rm -f $(EXAMPLE_PNG)
 	rm -rf temp/
 	cargo clean
 	$(MAKE) --directory $(HUC_DIR) clean
@@ -38,7 +38,7 @@ export PCE_PCEAS := $(HUC_DIR)/bin/pceas
 example/example.ovl: example/example.c $(HUC)
 	$(HUC) -cd -v -fno-recursive -msmall -over $<
 
-$(OUTPUT_PNG): images/320x256/ff7_1.png $(PCE_QUANT)
+$(EXAMPLE_PNG): example/images/320x256/ff7_1.png $(PCE_QUANT)
 	$(PCE_QUANT) $< png $@
 
 $(PCE_QUANT): cargo-build
