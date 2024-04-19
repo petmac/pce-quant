@@ -41,9 +41,11 @@ example/example.ovl: example/example.c $(HUC)
 	$(HUC) -cd -v -fno-recursive -msmall -over $<
 
 $(EXAMPLE_PNG): example/images/320x256/ff7_1.png $(PCE_QUANT)
+	mkdir -p $(dir $@)
 	$(PCE_QUANT) $< png $@
 
 temp/example.vram: example/images/320x256/ff7_1.png $(PCE_QUANT)
+	mkdir -p $(dir $@)
 	$(PCE_QUANT) $< vram $@
 
 $(PCE_QUANT): cargo-build
