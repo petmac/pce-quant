@@ -91,10 +91,11 @@ impl From<&IndexedPattern> for Pattern {
                 let input_bit_2 = (color_index >> 2) & 1;
                 let input_bit_3 = (color_index >> 3) & 1;
 
-                let output_byte_0 = input_bit_0 << x;
-                let output_byte_1 = input_bit_1 << x;
-                let output_byte_2 = input_bit_2 << x;
-                let output_byte_3 = input_bit_3 << x;
+                let shift = 7 - x;
+                let output_byte_0 = input_bit_0 << shift;
+                let output_byte_1 = input_bit_1 << shift;
+                let output_byte_2 = input_bit_2 << shift;
+                let output_byte_3 = input_bit_3 << shift;
 
                 output.bytes[y * 2] |= output_byte_0;
                 output.bytes[y * 2 + 1] |= output_byte_1;
