@@ -9,6 +9,7 @@
 
 void main() {
   set_xres(320);
+  scroll(0, 0, 8, 0, 223, 0xc0);
   // cd_loadvram(int ovl_idx, int sector_offset, int vram_addr, int bytes)
   cd_loadvram(OVL_VIDEODATA, 0, 0, VRAM_SIZE);
 
