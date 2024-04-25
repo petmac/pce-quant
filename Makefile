@@ -1,11 +1,12 @@
 PCE_QUANT := target/release/pce-quant
 
 EXAMPLE_PNG := temp/example.png
-EXAMPLE_ISO := temp/example.iso
+EXAMPLE_PCE := temp/example.pce
 
-HUC_DIR := external/huc
-HUC := $(HUC_DIR)/bin/huc
-ISOLINK := $(HUC_DIR)/bin/isolink
+LLVM_MOS_URL := https://github.com/llvm-mos/llvm-mos-sdk/releases/latest/download/llvm-mos-macos.tar.xz
+LLVM_MOS_ARCHIVE := temp/llvm-mos-macos.tar.xz
+LLVM_MOS_BIN_DIR := temp/llvm-mos/bin
+LLVM_MOS_CC := $(LLVM_MOS_BIN_DIR)/mos-pce-clang
 
 MACHINE := $(shell uname -m)
 ifeq ($(filter arm%,$(MACHINE)),)
@@ -17,28 +18,18 @@ MESEN_DIR := external/Mesen2
 MESEN := $(MESEN_DIR)/bin/$(MESEN_PLATFORM)/Release/$(MESEN_PLATFORM)/publish/Mesen
 
 .PHONY: all
-all: $(EXAMPLE_PNG) $(EXAMPLE_ISO) $(MESEN)
-	$(MESEN) $(shell pwd)/example/example.cue
+all: $(EXAMPLE_PNG) $(EXAMPLE_PCE) $(MESEN)
+	$(MESEN) $(shell pwd)/$(EXAMPLE_PCE)
 
 .PHONY: clean
 clean:
 	rm -f $(EXAMPLE_PNG)
 	rm -rf temp/
 	cargo clean
-	$(MAKE) --directory $(HUC_DIR) clean
 	$(MAKE) --directory $(MESEN_DIR) clean
 
-EXAMPLE_OVERLAYS := example/example.ovl temp/example.vram
-
-$(EXAMPLE_ISO): $(EXAMPLE_OVERLAYS) $(ISOLINK)
-	mkdir -p $(dir $@)
-	$(ISOLINK) $@ $(EXAMPLE_OVERLAYS)
-
-export PCE_INCLUDE := $(HUC_DIR)/include/huc
-export PCE_PCEAS := $(HUC_DIR)/bin/pceas
-
-example/example.ovl: example/example.c $(HUC)
-	$(HUC) -cd -v -fno-recursive -msmall -over $<
+$(EXAMPLE_PCE): example/example.c $(LLVM_MOS_CC)
+	$(LLVM_MOS_CC) -Os $< -o $@
 
 $(EXAMPLE_PNG): example/images/320x256/ff7_1.png $(PCE_QUANT)
 	mkdir -p $(dir $@)
@@ -54,8 +45,11 @@ $(PCE_QUANT): cargo-build
 cargo-build:
 	cargo build --release
 
-$(HUC) $(ISOLINK):
-	$(MAKE) --directory $(HUC_DIR)
+$(LLVM_MOS_CC): $(LLVM_MOS_ARCHIVE)
+	tar --extract --gunzip --file $< --directory temp/ -m
+
+$(LLVM_MOS_ARCHIVE):
+	curl -L -o $@ $(LLVM_MOS_URL)
 
 $(MESEN):
 	$(MAKE) --directory $(MESEN_DIR)

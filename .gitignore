@@ -11,11 +11,5 @@
 /target/
 /Cargo.lock
 
-# HuC
-/example/example.lst
-/example/example.ovl
-/example/example.s
-/example/example.sym
-
 # Output
 /temp/

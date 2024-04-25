@@ -1,19 +1,39 @@
-#include "huc.h"
+/**
+ * color-cycle
+ *
+ * To the extent possible under law, the person who associated CC0 with
+ * color-cycle has waived all copyright and related or neighboring rights
+ * to color-cycle.
+ *
+ * You should have received a copy of the CC0 legalcode along with this
+ * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
 
-#define OVL_BOOT 0
-#define OVL_PROG 1
-#define OVL_VIDEODATA 2
-#define BATM_SIZE (64 * 32 * 2)
-#define CHR_SIZE ((320 / 8) * (256 / 8) * 32)
-#define VRAM_SIZE (BATM_SIZE + CHR_SIZE)
+#include <pce.h>
 
-void main() {
-  set_xres(320);
-  scroll(0, 0, 8, 0, 223, 0xc0);
-  // cd_loadvram(int ovl_idx, int sector_offset, int vram_addr, int bytes)
-  cd_loadvram(OVL_VIDEODATA, 0, 0, VRAM_SIZE);
+uint16_t ticks = 0;
 
-  for (;;) {
-    vsync();
+// Define a VDC interrupt handler.
+__attribute__((interrupt)) void irq_vdc(void) {
+  // This also acknowledges the interrupt.
+  uint8_t status = *IO_VDC_STATUS;
+
+  if (status & VDC_FLAG_VBLANK) {
+    ticks++;
+  }
+}
+
+int main(void) {
+  // Configure the VDC screen resolution.
+  pce_vdc_set_resolution(256, 240, 0);
+
+  // Enable VDC interrupts for VBlanks.
+  pce_vdc_irq_vblank_enable();
+  pce_irq_enable(IRQ_VDC);
+  pce_cpu_irq_enable();
+
+  while (1) {
+    *IO_VCE_COLOR_INDEX = 0x100;
+    *IO_VCE_COLOR_DATA = (ticks >> 3);
   }
 }
