@@ -2,11 +2,13 @@ PCE_QUANT := target/release/pce-quant
 
 EXAMPLE_PNG := temp/example.png
 EXAMPLE_PCE := temp/example.pce
+EXAMPLE_ISO := temp/example.iso
 
 LLVM_MOS_URL := https://github.com/llvm-mos/llvm-mos-sdk/releases/latest/download/llvm-mos-macos.tar.xz
 LLVM_MOS_ARCHIVE := temp/llvm-mos-macos.tar.xz
 LLVM_MOS_BIN_DIR := temp/llvm-mos/bin
-LLVM_MOS_CC := $(LLVM_MOS_BIN_DIR)/mos-pce-clang
+LLVM_MOS_CC := $(LLVM_MOS_BIN_DIR)/mos-pce-cd-clang
+PCE_MKCD := $(LLVM_MOS_BIN_DIR)/pce-mkcd
 
 MACHINE := $(shell uname -m)
 ifeq ($(filter arm%,$(MACHINE)),)
@@ -18,8 +20,8 @@ MESEN_DIR := external/Mesen2
 MESEN := $(MESEN_DIR)/bin/$(MESEN_PLATFORM)/Release/$(MESEN_PLATFORM)/publish/Mesen
 
 .PHONY: all
-all: $(EXAMPLE_PNG) $(EXAMPLE_PCE) $(MESEN)
-	$(MESEN) $(shell pwd)/$(EXAMPLE_PCE)
+all: $(EXAMPLE_PNG) $(EXAMPLE_ISO) $(MESEN)
+	$(MESEN) $(shell pwd)/example/example.cue
 
 .PHONY: clean
 clean:
@@ -28,8 +30,11 @@ clean:
 	cargo clean
 	$(MAKE) --directory $(MESEN_DIR) clean
 
-$(EXAMPLE_PCE): example/example.c $(LLVM_MOS_CC)
-	$(LLVM_MOS_CC) -Os $< -o $@
+$(EXAMPLE_ISO): temp/example.elf $(PCE_MKCD)
+	$(PCE_MKCD) --ipl example/ipl-scd.out $@ $<
+
+temp/example.elf: example/example.c $(LLVM_MOS_CC)
+	$(LLVM_MOS_CC) -Os -Tbinary-cd.ld $< -o $@
 
 $(EXAMPLE_PNG): example/images/320x256/ff7_1.png $(PCE_QUANT)
 	mkdir -p $(dir $@)
@@ -45,7 +50,7 @@ $(PCE_QUANT): cargo-build
 cargo-build:
 	cargo build --release
 
-$(LLVM_MOS_CC): $(LLVM_MOS_ARCHIVE)
+$(LLVM_MOS_CC) $(PCE_MKCD): $(LLVM_MOS_ARCHIVE)
 	tar --extract --gunzip --file $< --directory temp/ -m
 
 $(LLVM_MOS_ARCHIVE):
