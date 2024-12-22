@@ -20,16 +20,18 @@ use crate::{tiled_indexed_image::TiledIndexedImage, vram::Vram};
 struct Cli {
     input_path: PathBuf,
 
-    #[command(subcommand)]
-    command: Commands,
+    #[arg(long = "png")]
+    png_output_path: Option<PathBuf>,
+
+    #[arg(long = "vram")]
+    vram_output_path: Option<PathBuf>,
+
+    #[arg(long = "palettes")]
+    palettes_output_path: Option<PathBuf>,
 }
 
 #[derive(Subcommand)]
-enum Commands {
-    Png { output_path: PathBuf },
-    Vram { output_path: PathBuf },
-    Palettes { output_path: PathBuf },
-}
+enum Commands {}
 
 fn main() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
@@ -39,36 +41,34 @@ fn main() -> Result<(), Box<dyn Error>> {
     let input_tiled_image = TiledImage::from(input_image);
     let tiled_indexed_image = TiledIndexedImage::from(input_tiled_image);
 
-    match cli.command {
-        Commands::Png { output_path } => {
-            println!("Output: {}", output_path.display());
+    if let Some(output_path) = cli.png_output_path {
+        println!("Output: {}", output_path.display());
 
-            let output_tiled_image = TiledImage::from(tiled_indexed_image);
-            let output_image = Image::from(output_tiled_image);
-            output_image.encode(&output_path)?;
-        }
-        Commands::Vram { output_path } => {
-            println!("Output: {}", output_path.display());
+        let output_tiled_image = TiledImage::from(&tiled_indexed_image);
+        let output_image = Image::from(output_tiled_image);
+        output_image.encode(&output_path)?;
+    }
+    if let Some(output_path) = cli.vram_output_path {
+        println!("Output: {}", output_path.display());
 
-            let output_vram = Vram::from(&tiled_indexed_image);
-            output_vram.encode(&output_path)?;
-        }
-        Commands::Palettes { output_path } => {
-            println!("Output: {}", output_path.display());
+        let output_vram = Vram::from(&tiled_indexed_image);
+        output_vram.encode(&output_path)?;
+    }
+    if let Some(output_path) = cli.palettes_output_path {
+        println!("Output: {}", output_path.display());
 
-            let output_palettes: Vec<u8> = tiled_indexed_image
-                .palettes
-                .iter()
-                .flatten()
-                .map(|color| {
-                    println!("Color: {}, {}, {}", color.r, color.g, color.b);
-                    color
-                })
-                .map(Color::packed)
-                .flat_map(|packed| [packed as u8, (packed >> 8) as u8])
-                .collect();
-            File::create(output_path)?.write_all(&output_palettes)?;
-        }
+        let output_palettes: Vec<u8> = tiled_indexed_image
+            .palettes
+            .iter()
+            .flatten()
+            .map(|color| {
+                println!("Color: {}, {}, {}", color.r, color.g, color.b);
+                color
+            })
+            .map(Color::packed)
+            .flat_map(|packed| [packed as u8, (packed >> 8) as u8])
+            .collect();
+        File::create(output_path)?.write_all(&output_palettes)?;
     }
 
     Ok(())

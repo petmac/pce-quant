@@ -127,8 +127,8 @@ fn palette_tile_indices(tile_palette_indices: &[usize]) -> Vec<Vec<usize>> {
     palette_tile_indices
 }
 
-impl From<TiledIndexedImage> for TiledImage {
-    fn from(source_image: TiledIndexedImage) -> Self {
+impl From<&TiledIndexedImage> for TiledImage {
+    fn from(source_image: &TiledIndexedImage) -> Self {
         let tiles = source_image
             .tiles
             .iter()

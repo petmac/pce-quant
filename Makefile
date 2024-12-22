@@ -40,17 +40,9 @@ export PCE_PCEAS := $(HUC_DIR)/bin/pceas
 example/example.ovl: example/example.c $(HUC)
 	$(HUC) -cd -v -fno-recursive -msmall -over $<
 
-$(EXAMPLE_PNG): example/images/320x256/ff7_1.png $(PCE_QUANT)
+$(EXAMPLE_PNG) temp/example.vram temp/example.pal: example/images/320x256/ff7_1.png $(PCE_QUANT)
 	mkdir -p $(dir $@)
-	$(PCE_QUANT) $< png $@
-
-temp/example.vram: example/images/320x256/ff7_1.png $(PCE_QUANT)
-	mkdir -p $(dir $@)
-	$(PCE_QUANT) $< vram $@
-
-temp/example.pal: example/images/320x256/ff7_1.png $(PCE_QUANT)
-	mkdir -p $(dir $@)
-	$(PCE_QUANT) $< palettes $@
+	$(PCE_QUANT) $< --png $(EXAMPLE_PNG) --vram temp/example.vram --palettes temp/example.pal
 
 $(PCE_QUANT): cargo-build
 
