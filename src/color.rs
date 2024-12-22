@@ -15,6 +15,12 @@ impl Color {
             b: truncate_to_3_bits(self.b),
         }
     }
+
+    pub fn packed(&self) -> u16 {
+        (((self.g * 7.0) as u16) << 6)
+            | (((self.r * 7.0) as u16) << 3)
+            | (((self.b * 7.0) as u16) << 0)
+    }
 }
 
 impl Elem for Color {

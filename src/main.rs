@@ -7,9 +7,10 @@ mod tiled_image;
 mod tiled_indexed_image;
 mod vram;
 
-use std::{error::Error, path::PathBuf};
+use std::{error::Error, fs::File, io::Write, path::PathBuf};
 
 use clap::{Parser, Subcommand};
+use color::Color;
 use image::Image;
 use tiled_image::TiledImage;
 
@@ -27,6 +28,7 @@ struct Cli {
 enum Commands {
     Png { output_path: PathBuf },
     Vram { output_path: PathBuf },
+    Palettes { output_path: PathBuf },
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -50,6 +52,22 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             let output_vram = Vram::from(&tiled_indexed_image);
             output_vram.encode(&output_path)?;
+        }
+        Commands::Palettes { output_path } => {
+            println!("Output: {}", output_path.display());
+
+            let output_palettes: Vec<u8> = tiled_indexed_image
+                .palettes
+                .iter()
+                .flatten()
+                .map(|color| {
+                    println!("Color: {}, {}, {}", color.r, color.g, color.b);
+                    color
+                })
+                .map(Color::packed)
+                .flat_map(|packed| [packed as u8, (packed >> 8) as u8])
+                .collect();
+            File::create(output_path)?.write_all(&output_palettes)?;
         }
     }
 
