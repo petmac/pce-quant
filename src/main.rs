@@ -10,7 +10,6 @@ mod vram;
 use std::{error::Error, fs::File, io::Write, path::PathBuf};
 
 use clap::{Parser, Subcommand};
-use color::Color;
 use image::Image;
 use tiled_image::TiledImage;
 
@@ -57,18 +56,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     if let Some(output_path) = cli.palettes_output_path {
         println!("Output: {}", output_path.display());
 
-        let output_palettes: Vec<u8> = tiled_indexed_image
-            .palettes
-            .iter()
-            .flatten()
-            .map(|color| {
-                println!("Color: {}, {}, {}", color.r, color.g, color.b);
-                color
-            })
-            .map(Color::packed)
-            .flat_map(|packed| [packed as u8, (packed >> 8) as u8])
-            .collect();
-        File::create(output_path)?.write_all(&output_palettes)?;
+        let mut output_file = File::create(output_path)?;
+        for palette in &tiled_indexed_image.palettes {
+            let mut output_palette: [u16; 16] = [0xffff; 16];
+            for (color_index, color) in palette.iter().enumerate() {
+                // Color index 0 is reserved for the background, so add 1
+                output_palette[color_index + 1] = color.packed();
+            }
+
+            let bytes: Vec<u8> = output_palette
+                .iter()
+                .copied()
+                .flat_map(|packed| [packed as u8, (packed >> 8) as u8])
+                .collect();
+            output_file.write_all(&bytes)?;
+        }
     }
 
     Ok(())

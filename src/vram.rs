@@ -85,7 +85,9 @@ impl From<&IndexedPattern> for Pattern {
             let input_row = &input[y];
 
             for x in 0..TILE_SIZE {
-                let color_index = input_row[x];
+                // Color index 0 is reserved for the background, so add 1
+                let color_index = input_row[x] + 1;
+
                 let input_bit_0 = color_index & 1;
                 let input_bit_1 = (color_index >> 1) & 1;
                 let input_bit_2 = (color_index >> 2) & 1;
