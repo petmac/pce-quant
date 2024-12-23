@@ -4,7 +4,7 @@ EXAMPLE_PNG := temp/example.png
 EXAMPLE_ISO := temp/example.iso
 
 HUC_DIR := external/huc
-HUC := $(HUC_DIR)/bin/huc
+HUC := $(HUC_DIR)/bin/hucc
 ISOLINK := $(HUC_DIR)/bin/isolink
 
 MACHINE := $(shell uname -m)
@@ -34,7 +34,7 @@ $(EXAMPLE_ISO): $(EXAMPLE_OVERLAYS) $(ISOLINK)
 	mkdir -p $(dir $@)
 	$(ISOLINK) $@ $(EXAMPLE_OVERLAYS)
 
-export PCE_INCLUDE := $(HUC_DIR)/include/huc
+export PCE_INCLUDE := $(HUC_DIR)/include/hucc
 export PCE_PCEAS := $(HUC_DIR)/bin/pceas
 
 example/example.ovl: example/example.c $(HUC)
